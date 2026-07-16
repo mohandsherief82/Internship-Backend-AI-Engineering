@@ -8,7 +8,14 @@ app.use(express.json());
 
 // Root route handler
 app.get('/', (req: Request, res: Response) => {
-    res.status(200).json({message: "Hello World!!\n"});
+    res.status(200)
+    .json({
+        name: 'Task API',
+        version: "1.0",
+        endpoints: [
+            "/tasks",
+        ]
+    });
 });
 
 // Bind app to port and starts event loop
