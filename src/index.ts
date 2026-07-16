@@ -36,11 +36,27 @@ app.get("/health", (req: Request, res: Response) => {
     res.sendStatus(200);
 });
 
-// Task route handler
+// Tasks route handler
 app.get('/tasks', (req: Request, res: Response) => {
-    res.status(200)
-    .json(tasks);
-})
+    if (tasks.length === 0) {
+        return res.sendStatus(204); 
+    }
+    return res.status(200).json(tasks);
+});
+
+app.get('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
+    const taskID = parseInt(req.params.id, 10);
+    
+    const foundTask = tasks.find(task => task.id === taskID);
+
+    if (!foundTask) {
+        return res.status(404)
+                  .json({ error: "Task 99 not found" });
+    }
+
+    return res.status(200)
+              .json(foundTask);
+});
 
 // Bind app to port and starts event loop
 app.listen(port, () => {
