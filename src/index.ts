@@ -36,6 +36,12 @@ app.get("/health", (req: Request, res: Response) => {
     res.sendStatus(200);
 });
 
+// Task route handler
+app.get('/tasks', (req: Request, res: Response) => {
+    res.status(200)
+    .json(tasks);
+})
+
 // Bind app to port and starts event loop
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
