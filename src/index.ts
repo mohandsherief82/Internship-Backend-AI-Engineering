@@ -18,6 +18,11 @@ app.get('/', (req: Request, res: Response) => {
     });
 });
 
+// Health checker route handler
+app.get("/health", (req: Request, res: Response) => {
+    res.sendStatus(200);
+});
+
 // Bind app to port and starts event loop
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
