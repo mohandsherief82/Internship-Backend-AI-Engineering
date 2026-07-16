@@ -1,5 +1,18 @@
 import express, {type Express, type Request, type Response} from 'express'
 
+// Custom type handling tasks
+interface Task {
+    id: number,
+    title: string,
+    done: boolean
+}
+
+const tasks: Task[] = [
+    {id: 0, title: "Build First CRUD API", done: false},
+    {id: 1, title: "Watch a tutorial on Typescript", done: true},
+    {id: 2, title: "Finish track", done: false}
+];
+
 // Initializing the server
 const app: Express = express();
 const port: number = 3000;
