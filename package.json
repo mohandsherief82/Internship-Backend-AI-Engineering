@@ -21,8 +21,12 @@
   },
   "homepage": "https://github.com/mohandsherief82/Internship-CRUD-Backend#readme",
   "devDependencies": {
-    "@types/node": "^26.1.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.1.1",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }
