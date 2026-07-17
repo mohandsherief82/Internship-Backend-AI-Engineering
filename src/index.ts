@@ -133,7 +133,7 @@ app.delete('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
 });
 
 // Extras
-// Reset handler
+// Reset route handler
 app.post('/reset', (req: Request, res: Response) => {
     tasks = [
         {id: 0, title: "Build First CRUD API", done: false},
@@ -146,6 +146,15 @@ app.post('/reset', (req: Request, res: Response) => {
                 message: "Database successfully reset to seed data.",
                 tasks: tasks
               });  
+})
+
+// Stats endpoint
+app.get('/stats', (req: Request, res: Response) => {
+    const lenDone = (tasks.filter(task => task.done == true)).length;
+    const len = tasks.length;
+
+    return res.status(200)
+              .json({ total: len,  done: lenDone, open: len - lenDone});
 })
 
 // Bind app to port and starts event loop
