@@ -1,3 +1,6 @@
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from "../openapi.json";
+
 import express, {type Express, type Request, type Response} from 'express'
 
 // Custom type handling tasks
@@ -18,6 +21,9 @@ const app: Express = express();
 const port: number = 3000;
 
 app.use(express.json());
+
+// Serve interactive Swagger documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Root route handler
 app.get('/', (req: Request, res: Response) => {
