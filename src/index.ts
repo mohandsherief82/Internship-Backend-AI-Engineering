@@ -38,9 +38,6 @@ app.get("/health", (req: Request, res: Response) => {
 
 // Tasks route handler
 app.get('/tasks', (req: Request, res: Response) => {
-    if (tasks.length === 0) {
-        return res.sendStatus(204); 
-    }
     return res.status(200).json(tasks);
 });
 
@@ -65,9 +62,9 @@ app.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id' | 'done'>>, res: Respon
     
     const { title } = req.body;
 
-    if (!title || typeof title !== 'string') {
+    if (!title || typeof title !== 'string' || title.trim() === '') {
         return res.status(400)
-                  .json("Missing or Empty task title.");
+                  .json( { error: "Missing or Empty task title." } );
     }
 
     const nextID = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 0;
@@ -85,8 +82,9 @@ app.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id'>>, res: Re
     }
 
     const { title, done } = req.body;
+    
 
-    if (!title || typeof title !== 'string') {
+    if (!title || typeof title !== 'string' || title.trim() === '') {
         return res.status(400)
                   .json({ error: "Title is required and must be a non-empty string." });
     }
@@ -109,6 +107,23 @@ app.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id'>>, res: Re
     foundTask.done = done;
 
     return res.status(200).json(foundTask);
+});
+
+app.delete('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
+    const taskID = parseInt(req.params.id, 10);
+
+    const foundTask = tasks.find(task => task.id === taskID);
+
+    if (!foundTask) {
+        return res.status(404)
+                  .json({ error: `Task ${taskID} not found` });
+    }
+
+    const index = tasks.indexOf(foundTask);
+    
+    tasks.splice(index, 1);
+
+    return res.sendStatus(204);
 });
 
 // Bind app to port and starts event loop
