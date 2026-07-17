@@ -1,0 +1,263 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Task CRUD API",
+    "version": "1.0.0",
+    "description": "A robust, type-safe RESTful Task Management API built with Express and TypeScript."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/tasks": {
+      "get": {
+        "summary": "Retrieve all tasks",
+        "description": "Returns a complete list of all tasks currently stored in memory.",
+        "responses": {
+          "200": {
+            "description": "A successful array of tasks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new task",
+        "description": "Validates incoming text payload and adds a new task with a unique server-generated ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "The title text of the task. Cannot be empty or purely whitespaces.",
+                    "example": "Finish Express Track"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Missing payload or invalid title.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The unique numeric ID of the target task.",
+          "schema": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Get a single task by ID",
+        "responses": {
+          "200": {
+            "description": "Task successfully found and returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The provided ID is not a valid number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. No task exists matching the provided ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update/Replace an entire task",
+        "description": "Completely updates the target task properties (`title` and `done` state) by index reference.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "done"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Watch TypeScript Tutorial"
+                  },
+                  "done": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task successfully updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Missing fields or validation error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. Task ID does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a task",
+        "description": "Safely locates and slices a task out of the database array by index.",
+        "responses": {
+          "204": {
+            "description": "Task successfully deleted. No response body returned."
+          },
+          "400": {
+            "description": "Bad Request. Invalid ID formatting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. Task ID does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "done"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "System-managed unique task ID.",
+            "example": 0
+          },
+          "title": {
+            "type": "string",
+            "description": "Descriptive name of the objective.",
+            "example": "Build First CRUD API"
+          },
+          "done": {
+            "type": "boolean",
+            "description": "Completion state tracking flag.",
+            "example": false
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Clear message detailing the target system failure context.",
+            "example": "Task 404 not found"
+          }
+        }
+      }
+    }
+  }
+}
