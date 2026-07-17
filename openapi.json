@@ -216,6 +216,68 @@
           }
         }
       }
+    },
+    "/reset": {
+      "post": {
+        "summary": "Reset and seed tasks database",
+        "description": "Restores the in-memory array back to its original 3 example tasks. Perfect for quick demos or automated testing runs.",
+        "responses": {
+          "200": {
+            "description": "Database successfully reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Database successfully reset to seed data."
+                    },
+                    "tasks": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "summary": "Get the number of total, done and open tasks.",
+        "description": "Calculates the number of done and total number of tasks and compute the open tasks from them.",
+        "responses": {
+          "200": {
+            "description": "All numbers are calculated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "example": "3"
+                    },
+                    "done": {
+                      "type": "integer",
+                      "example": "1"
+                    },
+                    "open": {
+                      "type": "integer",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
