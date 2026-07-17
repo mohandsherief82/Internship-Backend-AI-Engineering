@@ -77,4 +77,4 @@ To view and execute live network hooks inside the dashboard, open your browser a
 
 When you open your local documentation endpoint, the layout will look like the following interactive dashboard. You can expand each colored endpoint section to quickly test successful operations and error handling workflows directly inside the UI:
 
-<Image alt="Standard Swagger UI interactive endpoint documentation interface showing green POST orange PUT and blue GET routes grouped semantically" caption="Swagger UI Endpoint Dashboard Reference" src="image_agent_tag_2430789476351364838"/>
+![Swagger UI Test](image.png)
