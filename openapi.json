@@ -216,6 +216,36 @@
           }
         }
       }
+    },
+    "/reset": {
+      "post": {
+        "summary": "Reset and seed tasks database",
+        "description": "Restores the in-memory array back to its original 3 example tasks. Perfect for quick demos or automated testing runs.",
+        "responses": {
+          "200": {
+            "description": "Database successfully reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Database successfully reset to seed data."
+                    },
+                    "tasks": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
