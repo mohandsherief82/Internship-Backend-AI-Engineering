@@ -23,8 +23,9 @@ const getAllQuery = db.prepare(TASK_QUERIES.getAll);
 const getByIdQuery = db.prepare(TASK_QUERIES.getById);
 
 const insertQuery = db.prepare(TASK_QUERIES.insert);
-const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
+const updateQuery = db.prepare(TASK_QUERIES.update);
 
+const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
 const resetQuery = db.prepare(TASK_QUERIES.clear);
 
 const getCountDone = db.prepare(TASK_QUERIES.getCountDone);
@@ -42,10 +43,12 @@ export function getTaskByID(id: number) {
     return task;
 }
 
-export function deleteTaskById(id: number) {
+export function deleteTaskById(id: number) : boolean {
     const info = deleteByIdQuery.run({ id });
 
     console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
+
+    return info.changes === 1 ? true: false;
 }
 
 export function resetDB() {
@@ -75,11 +78,19 @@ export function getCounts(): Record<string, number> {
     };
 }
 
-export function insertTask(task: Omit<Task, 'id'>) {
-    insertQuery.run({
+export function insertTask(task: Omit<Task, 'id'>) : boolean {
+    const info = insertQuery.run({
         title: task.title,
         done: task.done ? 1: 0
     });
+
+    return info.changes === 1 ? true: false;
+}
+
+export function updateTask(id: number, done: boolean) : boolean {
+    const info = updateQuery.run({ id, done });
+
+    return info.changes === 1 ? true: false;
 }
 
 export default db

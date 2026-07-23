@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 
-import { getTasks, getTaskByID, deleteTaskById, resetDB, getCounts, insertTask, Task } from '../db/database.js'
+import { getTasks, getTaskByID, deleteTaskById
+            , resetDB, getCounts, insertTask, updateTask, Task } from '../db/database.js'
 
 const router = Router();
 
@@ -41,18 +42,12 @@ router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response) =>
     return res.status(201).json(newTask);
 });
 
-router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id'>>, res: Response) => {
+router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id' & 'title'>>, res: Response) => {
     if (!req.body) {
         return res.status(400).json({ error: "Invalid or missing JSON payload." });
     }
 
-    const { title, done } = req.body;
-    
-
-    if (!title || typeof title !== 'string' || title.trim() === '') {
-        return res.status(400)
-                  .json({ error: "Title is required and must be a non-empty string." });
-    }
+    const { done } = req.body;
 
     if (typeof done !== 'boolean') {
         return res.status(400)
@@ -61,17 +56,9 @@ router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id'>>, res:
 
     const taskID = parseInt(req.params.id, 10);
 
-    const foundTask = tasks.find(task => task.id === taskID);
+    const state = updateTask(taskID, done);
 
-    if (!foundTask) {
-        return res.status(404)
-                  .json({ error: `Task ${taskID} not found` });
-    }
-
-    foundTask.title = title;
-    foundTask.done = done;
-
-    return res.status(200).json(foundTask);
+    return res.status(200).json();
 });
 
 router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response) => {

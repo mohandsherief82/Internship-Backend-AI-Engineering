@@ -44,4 +44,10 @@ export const TASK_QUERIES = {
         DELETE 
         FROM tasks
     `,
+
+    update: `
+        UPDATE tasks
+        SET done = @done
+        WHERE id = @id
+    `
 } as const;
