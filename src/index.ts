@@ -1,6 +1,8 @@
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from "../openapi.json";
 
+import db from './db/database.js'
+
 import express, {type Express, type Request, type Response} from 'express'
 
 // Custom type handling tasks
