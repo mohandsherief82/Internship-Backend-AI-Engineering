@@ -21,7 +21,9 @@ db.exec(TASK_QUERIES.createTable);
 // Important statements
 const insertQuery = db.prepare(TASK_QUERIES.insert);
 const getAllQuery = db.prepare(TASK_QUERIES.getAll);
-const getByIdQuery = db.prepare(TASK_QUERIES.getById); 
+const getByIdQuery = db.prepare(TASK_QUERIES.getById);
+const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
+const clearQuery = db.prepare(TASK_QUERIES.clear);
 
 export function getTasks() {
     const tasks = getAllQuery.all() as Task[];
@@ -35,14 +37,26 @@ export function getTaskByID(id: number) {
     return task;
 }
 
-// Adding the seed tasks to the core database
-export const startDB = db.transaction(() => {
-    for (const task of SEED_TASKS) {
-        insertQuery.run({
-            title: task.title,
-            done: task.done
-        })
-    }
-});
+export function deleteTaskById(id: number) {
+    const info = deleteByIdQuery.run({ id });
+
+    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
+}
+
+export function resetDB() {
+    const info = clearQuery.run();
+    console.log(`Affected rows: ${info.changes}`);
+    
+    db.transaction(() => {
+        for (const task of SEED_TASKS) {
+            insertQuery.run({
+                title: task.title,
+                done: task.done ? 1 : 0
+            });
+        }
+    })();
+
+    console.log("The database has been reset to the initial state.")
+}
 
 export default db

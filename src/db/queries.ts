@@ -16,9 +16,17 @@ export const TASK_QUERIES = {
         FROM tasks 
         WHERE id = ?
     `,
+    
+    deleteById: `
+        DELETE FROM tasks WHERE title = @title
+    `,
 
     insert: `
         INSERT INTO tasks (title, done) 
         VALUES (@title, @done)
-    `
+    `,
+
+    clear: `
+        DELETE FROM tasks
+    `,
 } as const;

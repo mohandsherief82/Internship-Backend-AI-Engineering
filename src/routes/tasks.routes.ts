@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import { getTasks, getTaskByID, Task, SEED_TASKS } from '../db/database.js'
+import { getTasks, getTaskByID, resetDB, Task, SEED_TASKS } from '../db/database.js'
 
 let tasks: Task[] = SEED_TASKS;
 
@@ -21,8 +21,7 @@ router.get('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
                   .json({ error: `Task ${taskID} not found` });
     }
 
-    return res.status(200)
-              .json(task);
+    return res.status(200).json(task);
 });
 
 router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id' | 'done'>>, res: Response) => {
@@ -97,11 +96,7 @@ router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
 });
 
 router.post('/reset', (req: Request, res: Response) => {
-    tasks = [
-        {id: 0, title: "Build First CRUD API", done: false},
-        {id: 1, title: "Watch a tutorial on Typescript", done: true},
-        {id: 2, title: "Finish track", done: false}
-    ];
+    resetDB();
 
     return res.status(200)
               .json({
