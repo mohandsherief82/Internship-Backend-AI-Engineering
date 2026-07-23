@@ -23,7 +23,9 @@ const insertQuery = db.prepare(TASK_QUERIES.insert);
 const getAllQuery = db.prepare(TASK_QUERIES.getAll);
 const getByIdQuery = db.prepare(TASK_QUERIES.getById);
 const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
-const clearQuery = db.prepare(TASK_QUERIES.clear);
+const resetQuery = db.prepare(TASK_QUERIES.clear);
+const getCountDone = db.prepare(TASK_QUERIES.getCountDone);
+const getCountTotal = db.prepare(TASK_QUERIES.getCountTotal);
 
 export function getTasks() {
     const tasks = getAllQuery.all() as Task[];
@@ -44,7 +46,7 @@ export function deleteTaskById(id: number) {
 }
 
 export function resetDB() {
-    const info = clearQuery.run();
+    const info = resetQuery.run();
     console.log(`Affected rows: ${info.changes}`);
     
     db.transaction(() => {
@@ -57,6 +59,17 @@ export function resetDB() {
     })();
 
     console.log("The database has been reset to the initial state.")
+}
+
+export function getCounts(): Record<string, number> {
+    const countDone = getCountDone.pluck().get() as number;
+    const countTotal = getCountTotal.pluck().get() as number;
+
+    return {
+        done: countDone,
+        open: countTotal - countDone,
+        total: countTotal
+    };
 }
 
 export default db

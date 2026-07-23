@@ -18,15 +18,30 @@ export const TASK_QUERIES = {
     `,
     
     deleteById: `
-        DELETE FROM tasks WHERE title = @title
+        DELETE 
+        FROM tasks 
+        WHERE title = @title
     `,
 
     insert: `
-        INSERT INTO tasks (title, done) 
-        VALUES (@title, @done)
+        INSERT 
+        INTO tasks 
+        (title, done) VALUES (@title, @done)
+    `,
+
+    getCountDone: `
+        SELECT COUNT(*) AS totalDone 
+        FROM tasks 
+        WHERE done = 1
+    `,
+
+    getCountTotal: `
+        SELECT COUNT(*)
+        FROM tasks    
     `,
 
     clear: `
-        DELETE FROM tasks
+        DELETE 
+        FROM tasks
     `,
 } as const;

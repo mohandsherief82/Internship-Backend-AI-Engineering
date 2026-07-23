@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import { getTasks, getTaskByID, resetDB, Task, SEED_TASKS } from '../db/database.js'
+import { getTasks, getTaskByID, resetDB, getCounts, Task, SEED_TASKS } from '../db/database.js'
 
 let tasks: Task[] = SEED_TASKS;
 
@@ -106,11 +106,7 @@ router.post('/reset', (req: Request, res: Response) => {
 });
 
 router.get('/stats', (req: Request, res: Response) => {
-    const lenDone = (tasks.filter(task => task.done == true)).length;
-    const len = tasks.length;
-
-    return res.status(200)
-              .json({ total: len,  done: lenDone, open: len - lenDone});
+    return res.status(200).json(getCounts());
 })
 
 export default router;
