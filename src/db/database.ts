@@ -19,11 +19,14 @@ const db = new Database("src/db/tasks.db");
 db.exec(TASK_QUERIES.createTable);
 
 // Important statements
-const insertQuery = db.prepare(TASK_QUERIES.insert);
 const getAllQuery = db.prepare(TASK_QUERIES.getAll);
 const getByIdQuery = db.prepare(TASK_QUERIES.getById);
+
+const insertQuery = db.prepare(TASK_QUERIES.insert);
 const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
+
 const resetQuery = db.prepare(TASK_QUERIES.clear);
+
 const getCountDone = db.prepare(TASK_QUERIES.getCountDone);
 const getCountTotal = db.prepare(TASK_QUERIES.getCountTotal);
 
@@ -70,6 +73,13 @@ export function getCounts(): Record<string, number> {
         open: countTotal - countDone,
         total: countTotal
     };
+}
+
+export function insertTask(task: Omit<Task, 'id'>) {
+    insertQuery.run({
+        title: task.title,
+        done: task.done ? 1: 0
+    });
 }
 
 export default db

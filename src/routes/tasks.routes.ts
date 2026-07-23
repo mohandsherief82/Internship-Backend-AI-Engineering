@@ -1,8 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import { getTasks, getTaskByID, resetDB, getCounts, Task, SEED_TASKS } from '../db/database.js'
-
-let tasks: Task[] = SEED_TASKS;
+import { getTasks, getTaskByID, deleteTaskById, resetDB, getCounts, insertTask, Task } from '../db/database.js'
 
 const router = Router();
 
@@ -24,7 +22,7 @@ router.get('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
     return res.status(200).json(task);
 });
 
-router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id' | 'done'>>, res: Response) => {
+router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response) => {
     if (!req.body) {
         return res.status(400).json({ error: "Invalid or missing JSON payload." });
     }
@@ -36,11 +34,9 @@ router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id' | 'done'>>, res: Res
                   .json( { error: "Missing or Empty task title." } );
     }
 
-    const nextID = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 0;
-
-    const newTask: Task = {id: nextID, title: title, done: false};
-
-    tasks.push(newTask);
+    const newTask: Omit<Task, 'id'> = { title: title, done: false};
+    
+    insertTask(newTask);
 
     return res.status(201).json(newTask);
 });
@@ -81,16 +77,7 @@ router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id'>>, res:
 router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
     const taskID = parseInt(req.params.id, 10);
 
-    const foundTask = tasks.find(task => task.id === taskID);
-
-    if (!foundTask) {
-        return res.status(404)
-                  .json({ error: `Task ${taskID} not found` });
-    }
-
-    const index = tasks.indexOf(foundTask);
-    
-    tasks.splice(index, 1);
+    deleteTaskById(taskID);
 
     return res.sendStatus(204);
 });
@@ -101,7 +88,7 @@ router.post('/reset', (req: Request, res: Response) => {
     return res.status(200)
               .json({
                 message: "Database successfully reset to seed data.",
-                tasks: tasks
+                tasks: getTasks()
               });  
 });
 
