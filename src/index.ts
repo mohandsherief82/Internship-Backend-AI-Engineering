@@ -1,7 +1,6 @@
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from "../openapi.json";
 
-import db from './db/database.js'
 import tasksRouter from './routes/tasks.routes.js';
 import metaRouter from './routes/meta.routes.js';
 
@@ -16,8 +15,9 @@ app.use(express.json());
 // Serve interactive Swagger documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+// Use the paths
 app.use('/', metaRouter);
-app.use('/', tasksRouter)
+app.use('/', tasksRouter);
 
 // Bind app to port and starts event loop
 app.listen(port, () => {

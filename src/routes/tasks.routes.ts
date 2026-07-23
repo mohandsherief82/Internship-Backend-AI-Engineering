@@ -1,17 +1,8 @@
 import { Router, Request, Response } from 'express';
 
-// Custom type handling tasks
-interface Task {
-    id: number,
-    title: string,
-    done: boolean
-}
+import { getTasks, Task, SEED_TASKS } from '../db/database.js'
 
-let tasks: Task[] = [
-    {id: 0, title: "Build First CRUD API", done: false},
-    {id: 1, title: "Watch a tutorial on Typescript", done: true},
-    {id: 2, title: "Finish track", done: false}
-];
+let tasks: Task[] = SEED_TASKS;
 
 const router = Router();
 
