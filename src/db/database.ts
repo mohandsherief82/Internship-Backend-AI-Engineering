@@ -28,8 +28,7 @@ const updateQuery = db.prepare(TASK_QUERIES.update);
 const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
 const resetQuery = db.prepare(TASK_QUERIES.clear);
 
-const getCountDone = db.prepare(TASK_QUERIES.getCountDone);
-const getCountTotal = db.prepare(TASK_QUERIES.getCountTotal);
+const getCountsQuery = db.prepare(TASK_QUERIES.getCounts);
 
 export function getTasks() {
     const tasks = getAllQuery.all() as Task[];
@@ -54,6 +53,8 @@ export function deleteTaskById(id: number) : boolean {
 export function resetDB() {
     const info = resetQuery.run();
     console.log(`Affected rows: ${info.changes}`);
+
+    db.exec(TASK_QUERIES.clearHistory);
     
     db.transaction(() => {
         for (const task of SEED_TASKS) {
@@ -68,23 +69,23 @@ export function resetDB() {
 }
 
 export function getCounts(): Record<string, number> {
-    const countDone = getCountDone.pluck().get() as number;
-    const countTotal = getCountTotal.pluck().get() as number;
-
+    const counts = getCountsQuery.get() as { total: number; done: number | null };
+    const done = counts.done ?? 0;
+    
     return {
-        done: countDone,
-        open: countTotal - countDone,
-        total: countTotal
+        done,
+        open: counts.total - done,
+        total: counts.total
     };
 }
 
-export function insertTask(task: Omit<Task, 'id'>) : boolean {
+export function insertTask(task: Omit<Task, 'id'>) : [boolean, number] {
     const info = insertQuery.run({
         title: task.title,
         done: task.done ? 1: 0
     });
 
-    return info.changes === 1 ? true: false;
+    return [info.changes === 1 ? true: false, Number(info.lastInsertRowid)];
 }
 
 export function updateTask(id: number, done: boolean) : boolean {
@@ -92,5 +93,3 @@ export function updateTask(id: number, done: boolean) : boolean {
 
     return info.changes === 1 ? true: false;
 }
-
-export default db

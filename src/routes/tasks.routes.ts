@@ -5,7 +5,6 @@ import { getTasks, getTaskByID, deleteTaskById
 
 const router = Router();
 
-// Tasks route handler
 router.get('/tasks', (req: Request, res: Response) => {
     return res.status(200).json(getTasks());
 });
@@ -35,9 +34,11 @@ router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response) =>
                   .json( { error: "Missing or Empty task title." } );
     }
 
-    const newTask: Omit<Task, 'id'> = { title: title, done: false};
+    const newTask: Task = { id: -1, title: title, done: false};
     
-    insertTask(newTask);
+    const [ status, id ] = insertTask(newTask);
+
+    newTask.id = id;
 
     return res.status(201).json(newTask);
 });

@@ -29,20 +29,23 @@ export const TASK_QUERIES = {
         (title, done) VALUES (@title, @done)
     `,
 
-    getCountDone: `
-        SELECT COUNT(*) AS totalDone 
-        FROM tasks 
-        WHERE done = 1
+    getCounts: `
+        SELECT 
+            COUNT(*) AS total,
+            SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) AS done
+        FROM tasks
     `,
 
-    getCountTotal: `
-        SELECT COUNT(*)
-        FROM tasks    
-    `,
-
+    
     clear: `
         DELETE 
         FROM tasks
+    `,
+
+    clearHistory: `
+        DELETE 
+        FROM sqlite_sequence 
+        WHERE name = 'tasks'
     `,
 
     update: `
