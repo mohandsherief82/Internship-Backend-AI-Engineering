@@ -12,7 +12,7 @@ export const SEED_TASKS: Task[] = [
   { id: 1, title: 'Buy groceries', done: false },
   { id: 2, title: 'Walk the dog', done: true },
   { id: 3, title: 'Read a book', done: false },
-];
+] as const;
 
 const db = new Database("src/db/tasks.db");
 
@@ -24,10 +24,15 @@ const getAllQuery = db.prepare(TASK_QUERIES.getAll);
 const getByIdQuery = db.prepare(TASK_QUERIES.getById); 
 
 export function getTasks() {
-
     const tasks = getAllQuery.all() as Task[];
 
     return tasks;
+}
+
+export function getTaskByID(id: number) {
+    const task = getByIdQuery.get(id) as Task | undefined;
+
+    return task;
 }
 
 // Adding the seed tasks to the core database

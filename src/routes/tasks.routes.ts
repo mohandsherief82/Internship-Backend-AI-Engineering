@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import { getTasks, Task, SEED_TASKS } from '../db/database.js'
+import { getTasks, getTaskByID, Task, SEED_TASKS } from '../db/database.js'
 
 let tasks: Task[] = SEED_TASKS;
 
@@ -8,21 +8,21 @@ const router = Router();
 
 // Tasks route handler
 router.get('/tasks', (req: Request, res: Response) => {
-    return res.status(200).json(tasks);
+    return res.status(200).json(getTasks());
 });
 
 router.get('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
     const taskID = parseInt(req.params.id, 10);
-    
-    const foundTask = tasks.find(task => task.id === taskID);
 
-    if (!foundTask) {
+    const task = getTaskByID(taskID);
+    
+    if (!task) {
         return res.status(404)
                   .json({ error: `Task ${taskID} not found` });
     }
 
     return res.status(200)
-              .json(foundTask);
+              .json(task);
 });
 
 router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id' | 'done'>>, res: Response) => {
