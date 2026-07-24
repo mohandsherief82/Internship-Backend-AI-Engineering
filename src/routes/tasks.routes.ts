@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
 
 import { getTasks, getTaskByID, deleteTaskById
-            , resetDB, getCounts, insertTask, updateTask, Task } from '../db/database.js'
+            , resetDB, getCounts, insertTask, updateTask } from '../services/tasks.services.js'
+import { Task } from '../db/database.js'
 
 const router = Router();
 
