@@ -1,6 +1,8 @@
 import { db, Task, SEED_TASKS } from '../db/database.js';
 import { TASK_QUERIES } from '../db/queries.js';
 
+import { ValidationError, NotFoundError } from '../errors.js'
+
 // Important statements
 const getAllQuery = db.prepare(TASK_QUERIES.getAll);
 const getByIdQuery = db.prepare(TASK_QUERIES.getById);
@@ -22,15 +24,21 @@ export function getTasks() {
 export function getTaskByID(id: number) {
     const task = getByIdQuery.get(id) as Task | undefined;
 
+    if (task === undefined) {
+        throw new NotFoundError(`Task with ID ${id} was not found.`);
+    }
+
     return task;
 }
 
-export function deleteTaskById(id: number) : boolean {
+export function deleteTaskById(id: number) {
     const info = deleteByIdQuery.run({ id });
 
-    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
+    if (info.changes === 0) {
+        throw new NotFoundError(`Task with ID ${id} was not found.`);
+    }
 
-    return info.changes === 1 ? true: false;
+    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
 }
 
 export function resetDB() {
@@ -62,17 +70,26 @@ export function getCounts(): Record<string, number> {
     };
 }
 
-export function insertTask(task: Omit<Task, 'id'>) : [boolean, number] {
+export function insertTask(task: Omit<Task, 'id'>) : number {
     const info = insertQuery.run({
         title: task.title,
         done: task.done ? 1: 0
     });
 
-    return [info.changes === 1 ? true: false, Number(info.lastInsertRowid)];
+    return Number(info.lastInsertRowid);
 }
 
-export function updateTask(id: number, done: boolean) : boolean {
-    const info = updateQuery.run({ id, done });
+export function updateTask(id: number, done: boolean) {
+    if (typeof done !== "boolean") {
+        throw new ValidationError(`Done must be a boolean. Was Given ${done}`);
+    }
 
-    return info.changes === 1 ? true: false;
+    const info = updateQuery.run({ 
+            id,
+            done: done ? 1 : 0 
+        });
+
+    if (info.changes === 0) {
+        throw new NotFoundError(`Task with ID ${id} was not found.`);
+    }
 }

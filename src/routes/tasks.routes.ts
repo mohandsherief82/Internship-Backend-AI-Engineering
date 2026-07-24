@@ -1,88 +1,106 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 
 import { getTasks, getTaskByID, deleteTaskById
-            , resetDB, getCounts, insertTask, updateTask } from '../services/tasks.services.js'
-import { Task } from '../db/database.js'
+            , resetDB, getCounts, insertTask, updateTask } from '../services/tasks.services.js';
+import { Task } from '../db/database.js';
+import { ValidationError } from '../errors.js';
 
 const router = Router();
 
-router.get('/tasks', (req: Request, res: Response) => {
-    return res.status(200).json(getTasks());
-});
-
-router.get('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
-    const taskID = parseInt(req.params.id, 10);
-
-    const task = getTaskByID(taskID);
-    
-    if (!task) {
-        return res.status(404)
-                  .json({ error: `Task ${taskID} not found` });
+router.get('/tasks', (req: Request, res: Response, next: NextFunction) => {
+    try {
+        return res.status(200).json(getTasks());
+    } catch (err) {
+        next(err);
     }
-
-    return res.status(200).json(task);
 });
 
-router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response) => {
+router.get('/tasks/:id', (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+    try {
+        const taskID = parseInt(req.params.id, 10);
+
+        const task = getTaskByID(taskID);
+
+        return res.status(200).json(task);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response, next: NextFunction) => {
     if (!req.body) {
-        return res.status(400).json({ error: "Invalid or missing JSON payload." });
+        next(new ValidationError("Invalid or missing JSON payload."));
     }
     
     const { title } = req.body;
 
     if (!title || typeof title !== 'string' || title.trim() === '') {
-        return res.status(400)
-                  .json( { error: "Missing or Empty task title." } );
+        next(new ValidationError("Invalid or missing task title."));
     }
 
-    const newTask: Task = { id: -1, title: title, done: false};
+    try {
+        const newTask: Task = { id: -1, title: title, done: false};
     
-    const [ status, id ] = insertTask(newTask);
+        const id = insertTask(newTask);
 
-    newTask.id = id;
+        newTask.id = id;
 
-    return res.status(201).json(newTask);
+        return res.status(201).json(newTask);
+    } catch (err) {
+        next(err);
+    }
 });
 
-router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id' & 'title'>>, res: Response) => {
+router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id' & 'title'>>, res: Response, next: NextFunction) => {
     if (!req.body) {
-        return res.status(400).json({ error: "Invalid or missing JSON payload." });
+        next(new ValidationError("Invalid or missing JSON payload."));
     }
 
     const { done } = req.body;
 
-    if (typeof done !== 'boolean') {
-        return res.status(400)
-                  .json({ error: "Done status is required and must be a boolean." });
+    const taskID = parseInt(req.params.id, 10);
+
+    try {
+        updateTask(taskID, done);
+
+        return res.status(200).json();
+    } catch (err) {
+        next(err);
     }
-
-    const taskID = parseInt(req.params.id, 10);
-
-    const state = updateTask(taskID, done);
-
-    return res.status(200).json();
 });
 
-router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response) => {
-    const taskID = parseInt(req.params.id, 10);
+router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+    try {
+        const taskID = parseInt(req.params.id, 10);
 
-    deleteTaskById(taskID);
+        deleteTaskById(taskID);
 
-    return res.sendStatus(204);
+        return res.sendStatus(204);
+    } catch (err) {
+        next(err);
+    }
 });
 
-router.post('/reset', (req: Request, res: Response) => {
-    resetDB();
+router.post('/reset', (req: Request, res: Response, next: NextFunction) => {
+    try {
+        resetDB();
 
-    return res.status(200)
-              .json({
-                message: "Database successfully reset to seed data.",
-                tasks: getTasks()
-              });  
+        return res.status(200)
+                .json({
+                    message: "Database successfully reset to seed data.",
+                    tasks: getTasks()
+                });
+    } catch (err) {
+        next(err);
+    }
 });
 
-router.get('/stats', (req: Request, res: Response) => {
-    return res.status(200).json(getCounts());
+router.get('/stats', (req: Request, res: Response, next: NextFunction) => {
+    try {
+        return res.status(200).json(getCounts());
+    } catch (err) {
+        next(err);
+    }
 })
 
 export default router;
