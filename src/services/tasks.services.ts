@@ -1,37 +1,26 @@
-import { db, Task, SEED_TASKS } from '../db/database.js';
+import { pool, Task, SEED_TASKS } from '../db/database.js';
 import { TASK_QUERIES } from '../db/queries.js';
 
 import { ValidationError, NotFoundError } from '../errors.js'
 
-// Important statements
-const getAllQuery = db.prepare(TASK_QUERIES.getAll);
-const getByIdQuery = db.prepare(TASK_QUERIES.getById);
 
-const insertQuery = db.prepare(TASK_QUERIES.insert);
-const updateQuery = db.prepare(TASK_QUERIES.update);
+export async function getTasks() : Promise<Task[]> {
+    const res = await pool.query(TASK_QUERIES.getAll);
 
-const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
-const resetQuery = db.prepare(TASK_QUERIES.clear);
-
-const getCountsQuery = db.prepare(TASK_QUERIES.getCounts);
-
-export function getTasks() {
-    const tasks = getAllQuery.all() as Task[];
-
-    return tasks;
+    return res.rows as Task[];
 }
 
-export function getTaskByID(id: number) {
-    const task = getByIdQuery.get(id) as Task | undefined;
+export async function getTaskByID(id: number) : Promise<Task | null> {
+    const res = await pool.query<Task>(TASK_QUERIES.getById, [id]);
 
-    if (task === undefined) {
+    if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
 
-    return task;
+    return res.rows[0] ?? null;
 }
 
-export function deleteTaskById(id: number) {
+export async function deleteTaskById(id: number) {
     const info = deleteByIdQuery.run({ id });
 
     if (info.changes === 0) {
@@ -41,13 +30,13 @@ export function deleteTaskById(id: number) {
     console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
 }
 
-export function resetDB() {
+export async function resetDB() {
     const info = resetQuery.run();
     console.log(`Affected rows: ${info.changes}`);
 
-    db.exec(TASK_QUERIES.clearHistory);
+    pool.exec(TASK_QUERIES.clearHistory);
     
-    db.transaction(() => {
+    pool.transaction(() => {
         for (const task of SEED_TASKS) {
             insertQuery.run({
                 title: task.title,
@@ -59,7 +48,7 @@ export function resetDB() {
     console.log("The database has been reset to the initial state.")
 }
 
-export function getCounts(): Record<string, number> {
+export async function getCounts(): Promise<Record<string, number>> {
     const counts = getCountsQuery.get() as { total: number; done: number | null };
     const done = counts.done ?? 0;
     
@@ -70,7 +59,7 @@ export function getCounts(): Record<string, number> {
     };
 }
 
-export function insertTask(task: Omit<Task, 'id'>) : number {
+export async function insertTask(task: Omit<Task, 'id'>) : Promise<number> {
     const info = insertQuery.run({
         title: task.title,
         done: task.done ? 1: 0
@@ -79,7 +68,7 @@ export function insertTask(task: Omit<Task, 'id'>) : number {
     return Number(info.lastInsertRowid);
 }
 
-export function updateTask(id: number, done: boolean) {
+export async function updateTask(id: number, done: boolean) {
     if (typeof done !== "boolean") {
         throw new ValidationError(`Done must be a boolean. Was Given ${done}`);
     }
