@@ -1,56 +1,55 @@
 export const TASK_QUERIES = {
     createTable: `
         CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             title TEXT NOT NULL,
-            done INTEGER NOT NULL DEFAULT 0
-    );`,
+            done BOOLEAN NOT NULL DEFAULT FALSE
+        );`,
 
     getAll: `
         SELECT * 
         FROM tasks
-    `,
+        ORDER BY id ASC
+        ;`,
 
     getById: `
         SELECT * 
         FROM tasks 
-        WHERE id = ?
-    `,
+        WHERE id = $1
+        ;`,
     
     deleteById: `
         DELETE 
         FROM tasks 
-        WHERE title = @title
-    `,
+        WHERE id = $1
+        ;`,
 
     insert: `
-        INSERT 
-        INTO tasks 
-        (title, done) VALUES (@title, @done)
-    `,
+        INSERT INTO tasks (title, done) 
+        VALUES ($1, $2)
+        RETURNING *
+        ;`,
 
     getCounts: `
         SELECT 
             COUNT(*) AS total,
-            SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) AS done
+            COUNT(*) FILTER (WHERE done = TRUE) AS done
         FROM tasks
-    `,
+        ;`,
 
-    
     clear: `
         DELETE 
         FROM tasks
-    `,
+        ;`,
 
     clearHistory: `
-        DELETE 
-        FROM sqlite_sequence 
-        WHERE name = 'tasks'
-    `,
+        TRUNCATE tasks RESTART IDENTITY
+        ;`,
 
     update: `
         UPDATE tasks
-        SET done = @done
-        WHERE id = @id
-    `
+        SET done = $2
+        WHERE id = $1
+        RETURNING *
+        ;`,
 } as const;

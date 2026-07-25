@@ -1,95 +1,77 @@
-import { db, Task, SEED_TASKS } from '../db/database.js';
+import { pool, Task, SEED_TASKS } from '../db/database.js';
 import { TASK_QUERIES } from '../db/queries.js';
 
 import { ValidationError, NotFoundError } from '../errors.js'
 
-// Important statements
-const getAllQuery = db.prepare(TASK_QUERIES.getAll);
-const getByIdQuery = db.prepare(TASK_QUERIES.getById);
 
-const insertQuery = db.prepare(TASK_QUERIES.insert);
-const updateQuery = db.prepare(TASK_QUERIES.update);
+export async function getTasks() : Promise<Task[]> {
+    const res = await pool.query(TASK_QUERIES.getAll);
 
-const deleteByIdQuery = db.prepare(TASK_QUERIES.deleteById);
-const resetQuery = db.prepare(TASK_QUERIES.clear);
-
-const getCountsQuery = db.prepare(TASK_QUERIES.getCounts);
-
-export function getTasks() {
-    const tasks = getAllQuery.all() as Task[];
-
-    return tasks;
+    return res.rows as Task[];
 }
 
-export function getTaskByID(id: number) {
-    const task = getByIdQuery.get(id) as Task | undefined;
+export async function getTaskByID(id: number) : Promise<Task | null> {
+    const res = await pool.query<Task>(TASK_QUERIES.getById, [id]);
 
-    if (task === undefined) {
+    if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
 
-    return task;
+    return res.rows[0] ?? null;
 }
 
-export function deleteTaskById(id: number) {
-    const info = deleteByIdQuery.run({ id });
+export async function deleteTaskById(id: number) {
+    const res = await pool.query(TASK_QUERIES.deleteById, [id]);
 
-    if (info.changes === 0) {
+    if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
-
-    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
-}
-
-export function resetDB() {
-    const info = resetQuery.run();
-    console.log(`Affected rows: ${info.changes}`);
-
-    db.exec(TASK_QUERIES.clearHistory);
     
-    db.transaction(() => {
-        for (const task of SEED_TASKS) {
-            insertQuery.run({
-                title: task.title,
-                done: task.done ? 1 : 0
-            });
-        }
-    })();
-
-    console.log("The database has been reset to the initial state.")
+    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${res.rowCount}`);
 }
 
-export function getCounts(): Record<string, number> {
-    const counts = getCountsQuery.get() as { total: number; done: number | null };
-    const done = counts.done ?? 0;
+export async function resetDB() {
+    const res = await pool.query(TASK_QUERIES.clear)
+    console.log(`Affected rows: ${res.rowCount}`);
+
+    await pool.query(TASK_QUERIES.clearHistory);
+
+    for (var task of SEED_TASKS) {
+        await pool.query(TASK_QUERIES.insert, [ task.title, task.done ]);
+    }
+
+    console.log("The database has been reset to the initial state.");
+}
+
+export async function getCounts() {
+    const res = await pool.query(TASK_QUERIES.getCounts);
+
+    const total = parseInt(res.rows[0].total, 10) || 0;
+    const done = parseInt(res.rows[0].done, 10) || 0;
     
     return {
         done,
-        open: counts.total - done,
-        total: counts.total
+        open: total - done,
+        total,
     };
 }
 
-export function insertTask(task: Omit<Task, 'id'>) : number {
-    const info = insertQuery.run({
-        title: task.title,
-        done: task.done ? 1: 0
-    });
+export async function insertTask(task: Omit<Task, 'id'>) : Promise<Task | null> {
+    const res = await pool.query<Task>(TASK_QUERIES.insert, [task.title, task.done])
 
-    return Number(info.lastInsertRowid);
+    return res.rows[0] ?? null;
 }
 
-export function updateTask(id: number, done: boolean) {
+export async function updateTask(id: number, done: boolean) : Promise<Task | null> {
     if (typeof done !== "boolean") {
         throw new ValidationError(`Done must be a boolean. Was Given ${done}`);
     }
 
-    const info = updateQuery.run({ 
-            id,
-            done: done ? 1 : 0 
-        });
+    const res = await pool.query<Task>(TASK_QUERIES.update, [id, done]);
 
-    if (info.changes === 0) {
+    if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
+
+    return res.rows[0] ?? null;
 }

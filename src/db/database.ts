@@ -1,7 +1,9 @@
-import Database from 'better-sqlite3';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 import { TASK_QUERIES } from './queries.js';
-import { ValidationError, NotFoundError } from '../errors.js';  
 
 // Custom type handling tasks
 export interface Task {
@@ -16,6 +18,8 @@ export const SEED_TASKS: Task[] = [
   { id: 3, title: 'Read a book', done: false },
 ] as const;
 
-export const db = new Database("src/db/tasks.db");
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
-db.exec(TASK_QUERIES.createTable);
+await pool.query(TASK_QUERIES.createTable);
