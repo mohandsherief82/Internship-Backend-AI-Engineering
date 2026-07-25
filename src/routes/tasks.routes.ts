@@ -3,23 +3,35 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { getTasks, getTaskByID, deleteTaskById
             , resetDB, getCounts, insertTask, updateTask } from '../services/tasks.services.js';
 import { Task } from '../db/database.js';
-import { ValidationError } from '../errors.js';
+import { ValidationError, NotFoundError } from '../errors.js';
 
 const router = Router();
 
-router.get('/tasks', (req: Request, res: Response, next: NextFunction) => {
+router.get('/tasks', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        return res.status(200).json(getTasks());
+        const tasks: Task[] = await getTasks();
+
+        if (tasks.length == 0) {
+            console.log("Empty database fetched.")
+        } else {
+            console.log(`Fetched all tasks:\n${tasks}`);
+        }
+
+        return res.status(200).json(tasks);
     } catch (err) {
         next(err);
     }
 });
 
-router.get('/tasks/:id', (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+router.get('/tasks/:id', async (req: Request<{id: string}>, res: Response, next: NextFunction) => {
     try {
         const taskID = parseInt(req.params.id, 10);
 
-        const task = getTaskByID(taskID);
+        const task = await getTaskByID(taskID);
+
+        if (!task) {
+            throw new NotFoundError(`Task with ID ${taskID} was not found.`);
+        }
 
         return res.status(200).json(task);
     } catch (err) {
@@ -46,6 +58,8 @@ router.post('/tasks', async (req: Request<{}, {}, Omit<Task, 'id'>>, res: Respon
         if (!task) {
             throw new Error("Failed to insert task");
         }
+        
+        console.log("Added new task successfully");
 
         return res.status(201).json(task);
     } catch (err) {
@@ -53,7 +67,7 @@ router.post('/tasks', async (req: Request<{}, {}, Omit<Task, 'id'>>, res: Respon
     }
 });
 
-router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id' & 'title'>>, res: Response, next: NextFunction) => {
+router.put('/tasks/:id', async (req: Request<{id: string}, {}, Omit<Task, 'id' & 'title'>>, res: Response, next: NextFunction) => {
     if (!req.body) {
         next(new ValidationError("Invalid or missing JSON payload."));
     }
@@ -63,19 +77,23 @@ router.put('/tasks/:id', (req: Request<{id: string}, {}, Omit<Task, 'id' & 'titl
     const taskID = parseInt(req.params.id, 10);
 
     try {
-        updateTask(taskID, done);
+        const task = await updateTask(taskID, done);
 
-        return res.status(200).json();
+        if (!task) {
+            throw new NotFoundError(`Task with ID ${taskID} was not found.`);
+        }
+
+        return res.status(200).json(task);
     } catch (err) {
         next(err);
     }
 });
 
-router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+router.delete('/tasks/:id', async (req: Request<{id: string}>, res: Response, next: NextFunction) => {
     try {
         const taskID = parseInt(req.params.id, 10);
 
-        deleteTaskById(taskID);
+        await deleteTaskById(taskID);
 
         return res.sendStatus(204);
     } catch (err) {
@@ -83,23 +101,25 @@ router.delete('/tasks/:id', (req: Request<{id: string}>, res: Response, next: Ne
     }
 });
 
-router.post('/reset', (req: Request, res: Response, next: NextFunction) => {
+router.post('/reset', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        resetDB();
+        await resetDB();
+
+        const tasks = await getTasks();
 
         return res.status(200)
                 .json({
                     message: "Database successfully reset to seed data.",
-                    tasks: getTasks()
+                    tasks
                 });
     } catch (err) {
         next(err);
     }
 });
 
-router.get('/stats', (req: Request, res: Response, next: NextFunction) => {
+router.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        return res.status(200).json(getCounts());
+        return res.status(200).json(await getCounts());
     } catch (err) {
         next(err);
     }

@@ -26,7 +26,6 @@ export async function deleteTaskById(id: number) {
     if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
-
     
     console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${res.rowCount}`);
 }
@@ -37,7 +36,11 @@ export async function resetDB() {
 
     await pool.query(TASK_QUERIES.clearHistory);
 
-    console.log("The database has been reset to the initial state.")
+    for (var task of SEED_TASKS) {
+        await pool.query(TASK_QUERIES.insert, [ task.title, task.done ]);
+    }
+
+    console.log("The database has been reset to the initial state.");
 }
 
 export async function getCounts() {

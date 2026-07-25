@@ -9,6 +9,7 @@ export const TASK_QUERIES = {
     getAll: `
         SELECT * 
         FROM tasks
+        ORDER BY id ASC
         ;`,
 
     getById: `
