@@ -21,13 +21,14 @@ export async function getTaskByID(id: number) : Promise<Task | null> {
 }
 
 export async function deleteTaskById(id: number) {
-    const info = deleteByIdQuery.run({ id });
+    const res = await pool.query(TASK_QUERIES.deleteById, [id]);
 
-    if (info.changes === 0) {
+    if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
 
-    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${info.changes}`);
+    
+    console.log(`Row with id = ${id} has been deleted.\nAffected rows: ${res.rowCount}`);
 }
 
 export async function resetDB() {
@@ -59,26 +60,22 @@ export async function getCounts(): Promise<Record<string, number>> {
     };
 }
 
-export async function insertTask(task: Omit<Task, 'id'>) : Promise<number> {
-    const info = insertQuery.run({
-        title: task.title,
-        done: task.done ? 1: 0
-    });
+export async function insertTask(task: Omit<Task, 'id'>) : Promise<Task | null> {
+    const res = await pool.query<Task>(TASK_QUERIES.insert, [task.title, task.done])
 
-    return Number(info.lastInsertRowid);
+    return res.rows[0] ?? null;
 }
 
-export async function updateTask(id: number, done: boolean) {
+export async function updateTask(id: number, done: boolean) : Promise<Task | null> {
     if (typeof done !== "boolean") {
         throw new ValidationError(`Done must be a boolean. Was Given ${done}`);
     }
 
-    const info = updateQuery.run({ 
-            id,
-            done: done ? 1 : 0 
-        });
+    const res = await pool.query<Task>(TASK_QUERIES.update, [id, done]);
 
-    if (info.changes === 0) {
+    if (res.rowCount === 0) {
         throw new NotFoundError(`Task with ID ${id} was not found.`);
     }
+
+    return res.rows[0] ?? null;
 }
