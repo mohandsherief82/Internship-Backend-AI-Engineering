@@ -1,5 +1,5 @@
 import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from "../openapi.json";
+import swaggerDocument from "../openapi.json" with { type: 'json' };
 
 import tasksRouter from './routes/tasks.routes.js';
 import metaRouter from './routes/meta.routes.js';

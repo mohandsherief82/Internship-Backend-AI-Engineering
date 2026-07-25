@@ -27,7 +27,7 @@ router.get('/tasks/:id', (req: Request<{id: string}>, res: Response, next: NextF
     }
 });
 
-router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response, next: NextFunction) => {
+router.post('/tasks', async (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response, next: NextFunction) => {
     if (!req.body) {
         next(new ValidationError("Invalid or missing JSON payload."));
     }
@@ -41,11 +41,13 @@ router.post('/tasks', (req: Request<{}, {}, Omit<Task, 'id'>>, res: Response, ne
     try {
         const newTask: Task = { id: -1, title: title, done: false};
     
-        const id = insertTask(newTask);
+        const task = await insertTask(newTask);
 
-        newTask.id = id;
+        if (!task) {
+            throw new Error("Failed to insert task");
+        }
 
-        return res.status(201).json(newTask);
+        return res.status(201).json(task);
     } catch (err) {
         next(err);
     }
