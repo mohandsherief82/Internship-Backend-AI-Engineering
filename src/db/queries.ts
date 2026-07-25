@@ -50,5 +50,5 @@ export const TASK_QUERIES = {
         SET done = $2
         WHERE id = $1
         RETURNING *
-        ;`
+        ;`,
 } as const;

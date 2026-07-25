@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { pool } from '../db/database.js'
 
 const router = Router();
 
@@ -15,8 +16,15 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // Health checker route handler
-router.get("/health", (req: Request, res: Response) => {
-    res.sendStatus(200);
+router.get("/health", async (req: Request, resp: Response) => {
+    const res = await pool.query('SELECT 1 AS alive');
+
+    resp.status(200)
+         .json({ 
+            backend: "ok", 
+            database: res.rows[0].alive == 1 ? "ok" : "down" 
+        }
+    );
 });
 
 export default router;

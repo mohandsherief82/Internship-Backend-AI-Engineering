@@ -32,31 +32,24 @@ export async function deleteTaskById(id: number) {
 }
 
 export async function resetDB() {
-    const info = resetQuery.run();
-    console.log(`Affected rows: ${info.changes}`);
+    const res = await pool.query(TASK_QUERIES.clear)
+    console.log(`Affected rows: ${res.rowCount}`);
 
-    pool.exec(TASK_QUERIES.clearHistory);
-    
-    pool.transaction(() => {
-        for (const task of SEED_TASKS) {
-            insertQuery.run({
-                title: task.title,
-                done: task.done ? 1 : 0
-            });
-        }
-    })();
+    await pool.query(TASK_QUERIES.clearHistory);
 
     console.log("The database has been reset to the initial state.")
 }
 
-export async function getCounts(): Promise<Record<string, number>> {
-    const counts = getCountsQuery.get() as { total: number; done: number | null };
-    const done = counts.done ?? 0;
+export async function getCounts() {
+    const res = await pool.query(TASK_QUERIES.getCounts);
+
+    const total = parseInt(res.rows[0].total, 10) || 0;
+    const done = parseInt(res.rows[0].done, 10) || 0;
     
     return {
         done,
-        open: counts.total - done,
-        total: counts.total
+        open: total - done,
+        total,
     };
 }
 
