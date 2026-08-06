@@ -23,13 +23,13 @@ class MissingConfigError extends Error {
     }
 }
 
-class AuthError extends Error {
+class SignUpError extends Error {
     public readonly statusCode: number;
     public readonly code?: string;
 
     constructor(msg: string, statusCode: number = 400, code?: string) {
         super(msg);
-        this.name = "NotFoundError";
+        this.name = "SignUpError";
         this.statusCode = statusCode;
         this.code = code;
         Object.setPrototypeOf(this, new.target.prototype);
@@ -40,7 +40,7 @@ class InvalidCredentialsError extends Error {
         public readonly statusCode: number;
     public readonly code?: string;
 
-    constructor(msg: string, statusCode: number = 400, code?: string) {
+    constructor(msg: string, statusCode: number = 401, code?: string) {
         super(msg);
         this.name = "InvalidCredentialsError";
         this.statusCode = statusCode;
@@ -49,4 +49,4 @@ class InvalidCredentialsError extends Error {
     }
 }
 
-export { ValidationError, NotFoundError, MissingConfigError, AuthError, InvalidCredentialsError };
+export { ValidationError, NotFoundError, MissingConfigError, SignUpError, InvalidCredentialsError };
