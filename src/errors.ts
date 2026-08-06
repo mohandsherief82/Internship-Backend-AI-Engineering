@@ -13,4 +13,11 @@ class NotFoundError extends Error {
     }
 }
 
-export { ValidationError, NotFoundError };
+class MissingConfigError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        this.name = "NotFoundError";
+    }
+}
+
+export { ValidationError, NotFoundError, MissingConfigError };
