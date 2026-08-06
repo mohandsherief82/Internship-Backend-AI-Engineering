@@ -1,4 +1,5 @@
-import { ValidationError, NotFoundError, MissingConfigError, AuthError } from '../errors.js';
+import { ValidationError, NotFoundError, MissingConfigError, AuthError,
+    InvalidCredentialsError } from '../errors.js';
 import { NextFunction, Request, Response } from 'express';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
@@ -12,6 +13,10 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
 
     if (err instanceof MissingConfigError) {
         return res.status(503).json({ error: err.message });
+    }
+
+    if (err instanceof InvalidCredentialsError) {
+        return res.status(401).json({ error: "Invalid login credentials" });
     }
 
     if (err instanceof AuthError) {

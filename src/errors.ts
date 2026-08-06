@@ -36,4 +36,17 @@ class AuthError extends Error {
     }
 }
 
-export { ValidationError, NotFoundError, MissingConfigError, AuthError };
+class InvalidCredentialsError extends Error {
+        public readonly statusCode: number;
+    public readonly code?: string;
+
+    constructor(msg: string, statusCode: number = 400, code?: string) {
+        super(msg);
+        this.name = "InvalidCredentialsError";
+        this.statusCode = statusCode;
+        this.code = code;
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
+
+export { ValidationError, NotFoundError, MissingConfigError, AuthError, InvalidCredentialsError };
