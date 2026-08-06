@@ -1,8 +1,9 @@
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "../openapi.json" with { type: 'json' };
 
-import tasksRouter from './routes/tasks.routes.js';
-import metaRouter from './routes/meta.routes.js';
+import tasksRouter from "./routes/tasks.routes.js";
+import metaRouter from "./routes/meta.routes.js";
+import authRouter from "./routes/auth.routes.js";
 import config from "./config/env.js";
 
 import express, { type Express } from 'express';
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Use the paths
+app.use('/', authRouter);
 app.use('/', metaRouter);
 app.use('/', tasksRouter);
 

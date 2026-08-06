@@ -13,4 +13,4 @@ RUN pnpm build
 
 EXPOSE 3000
 
-CMD ["node", "src/index.js"]
+CMD ["pnpm", "exec", "tsx", "src/index.ts"]

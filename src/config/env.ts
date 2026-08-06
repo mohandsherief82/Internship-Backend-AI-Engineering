@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 
 interface Config {
@@ -12,9 +11,9 @@ dotenv.config();
 
 const config: Config = {
     port: Number(process.env.PORT) || 3000,
-    databaseURL: process.env.databaseURL || "",
-    supabaseURL: process.env.supabaseURL || "",
-    supabaseKey: process.env.supabaseKey || ""
+    databaseURL: process.env.DATABASE_URL || "",
+    supabaseURL: process.env.SUPABASE_URL || "",
+    supabaseKey: process.env.SUPABASE_KEY || ""
 };
 
 export default config;

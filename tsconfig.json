@@ -6,7 +6,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true, 
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": ["src/**/*", "openapi.json"]
 }
