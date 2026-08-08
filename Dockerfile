@@ -1,5 +1,5 @@
 FROM node:22-alpine
-RUN corepack enable && corepack prepare pnpm@11.13.1 --activate
+RUN npm install -g pnpm@11.13.1
 
 WORKDIR /app
 

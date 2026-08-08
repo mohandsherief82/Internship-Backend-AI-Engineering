@@ -18,8 +18,8 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Use the paths
-app.use('/', authRouter);
 app.use('/', metaRouter);
+app.use('/', authRouter);
 app.use('/', tasksRouter);
 
 // Bind app to port and starts event loop

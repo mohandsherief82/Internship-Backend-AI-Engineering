@@ -10,6 +10,6 @@ if (!config.supabaseKey) {
     throw new MissingConfigError("Missing Supabase Key in environment config.")
 }
 
-const supabase = createClient(config.supabaseURL, config.supabaseKey);
+const supabase = await createClient(config.supabaseURL, config.supabaseKey);
 
 export default supabase
