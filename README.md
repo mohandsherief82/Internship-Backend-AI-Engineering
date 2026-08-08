@@ -19,7 +19,7 @@ pnpm install && pnpm dev
 
 ## 🗺️ API Endpoints Reference
 
-The API uses standardized HTTP status codes (`200 OK`, `201 Created`, `204 No Content`, `400 Bad Request`, `404 Not Found`) to handle all transactional states.
+The API uses standardized HTTP status codes (`200 OK`, `201 Created`, `204 No Content`, `400 Bad Request`, `404 Not Found`, `401 Unauthorized`) to handle all transactional states.
 
 | Method | Endpoint | Description | Payload Constraints | Success | Errors |
 | --- | --- | --- | --- | --- | --- |
@@ -30,6 +30,14 @@ The API uses standardized HTTP status codes (`200 OK`, `201 Created`, `204 No Co
 | **POST** | `/tasks` | Creates a new task item | `{"title": "string"}` (Non-empty) | `201 Created` | `400 Bad Request` |
 | **PUT** | `/tasks/:id` | Replaces/updates a task fully | `{"title": "string", "done": boolean}` | `200 OK` | `400 Bad Request`, `404 Not Found` |
 | **DELETE** | `/tasks/:id` | Safely removes a task by ID | Requires valid numeric `id` | `204 No Content` | `400 Bad Request`, `404 Not Found` |
+| **POST** | `/reset` | Resets tasks to initial seed data | None | `200 OK` | N/A |
+| **GET** | `/stats` | Gets task statistics (total, done, open) | None | `200 OK` | N/A |
+| **POST** | `/auth/signup` | Registers a new user | `{"email": "string", "password": "string"}` | `201 Created` | `400 Bad Request` |
+| **POST** | `/auth/login` | Authenticates user and returns JWT tokens | `{"email": "string", "password": "string"}` | `200 OK` | `400 Bad Request`, `401 Unauthorized` |
+| **POST** | `/auth/logout` | Signs out the authenticated user | `Bearer <access_token>` | `204 No Content` | `401 Unauthorized` |
+| **GET** | `/public/info` | Fetches public information | None | `200 OK` | N/A |
+| **GET** | `/protected/profile` | Fetches authenticated user profile | `Bearer <access_token>` | `200 OK` | `401 Unauthorized` |
+| **GET** | `/protected/dashboard` | Fetches authenticated user email for dashboard | `Bearer <access_token>` | `200 OK` | `401 Unauthorized` |
 
 ---
 
