@@ -1,14 +1,20 @@
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "../openapi.json" with { type: 'json' };
 
-import tasksRouter from './routes/tasks.routes.js';
-import metaRouter from './routes/meta.routes.js';
+import tasksRouter from "./routes/tasks.routes.js";
+import metaRouter from "./routes/meta.routes.js";
+import authRouter from "./routes/auth.routes.js";
+import gatesRouter from "./routes/gates.routes.js";
+import protectedRouter from "./routes/protected.routes.js";
+import config from "./config/env.js";
 
-import express, {type Express, type Request, type Response} from 'express'
+import { errorHandler } from "./middleware/error-handler.js";
+
+import express, { type Express } from 'express';
 
 // Initializing the server
 const app: Express = express();
-const port: number = 3000;
+const port: number = config.port;
 
 app.use(express.json());
 
@@ -17,7 +23,12 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Use the paths
 app.use('/', metaRouter);
+app.use('/', gatesRouter);
+app.use('/', protectedRouter);
+app.use('/', authRouter);
 app.use('/', tasksRouter);
+
+app.use(errorHandler);
 
 // Bind app to port and starts event loop
 app.listen(port, () => {
