@@ -49,4 +49,15 @@ class InvalidCredentialsError extends Error {
     }
 }
 
-export { ValidationError, NotFoundError, MissingConfigError, SignUpError, InvalidCredentialsError };
+class AuthError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        this.name = "AuthError";
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
+
+export { 
+    ValidationError, NotFoundError, MissingConfigError, 
+    SignUpError, InvalidCredentialsError, AuthError 
+};
