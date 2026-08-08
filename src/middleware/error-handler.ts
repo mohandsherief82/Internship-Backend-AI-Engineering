@@ -15,7 +15,11 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
         return res.status(503).json({ error: err.message });
     }
 
-    if (err instanceof InvalidCredentialsError || err instanceof AuthError) {
+    if (err instanceof InvalidCredentialsError) {
+        return res.status(401).json({ error: err.message });
+    }
+
+    if (err instanceof AuthError) {
         return res.status(401).json({ error: err.message });
     }
 

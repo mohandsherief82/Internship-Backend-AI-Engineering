@@ -7,6 +7,8 @@ import authRouter from "./routes/auth.routes.js";
 import gatesRouter from "./routes/gates.routes.js";
 import config from "./config/env.js";
 
+import { errorHandler } from "./middleware/error-handler.js";
+
 import express, { type Express } from 'express';
 
 // Initializing the server
@@ -23,6 +25,8 @@ app.use('/', metaRouter);
 app.use('/', gatesRouter);
 app.use('/', authRouter);
 app.use('/', tasksRouter);
+
+app.use(errorHandler);
 
 // Bind app to port and starts event loop
 app.listen(port, () => {
