@@ -5,6 +5,7 @@ import tasksRouter from "./routes/tasks.routes.js";
 import metaRouter from "./routes/meta.routes.js";
 import authRouter from "./routes/auth.routes.js";
 import gatesRouter from "./routes/gates.routes.js";
+import protectedRouter from "./routes/protected.routes.js";
 import config from "./config/env.js";
 
 import { errorHandler } from "./middleware/error-handler.js";
@@ -23,6 +24,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Use the paths
 app.use('/', metaRouter);
 app.use('/', gatesRouter);
+app.use('/', protectedRouter);
 app.use('/', authRouter);
 app.use('/', tasksRouter);
 
