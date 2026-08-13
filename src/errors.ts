@@ -57,7 +57,29 @@ class AuthError extends Error {
     }
 }
 
+class ModelOutputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ModelOutputError";
+  }
+}
+
+class ModelJSONParseError extends ModelOutputError {
+  constructor(rawOutput: string) {
+    super(`LLM response could not be parsed as valid JSON. Raw output: "${rawOutput}"`);
+    this.name = "ModelJSONParseError";
+  }
+}
+
+class ModelSchemaValidationError extends ModelOutputError {
+  constructor(formattedZodIssues: string) {
+    super(`LLM output violated schema constraints: ${formattedZodIssues}`);
+    this.name = "ModelSchemaValidationError";
+  }
+}
+
 export { 
     ValidationError, NotFoundError, MissingConfigError, 
-    SignUpError, InvalidCredentialsError, AuthError 
+    SignUpError, InvalidCredentialsError, AuthError,
+    ModelJSONParseError, ModelOutputError, ModelSchemaValidationError
 };

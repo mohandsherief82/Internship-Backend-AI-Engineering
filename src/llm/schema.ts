@@ -14,5 +14,5 @@ export const JobExtractionOutput = z.object({
   reason: z.string(),
 });
 
-export type JobExtraction = z.infer<typeof JobExtractionOutput>;
-export type JobDescription = z.infer<typeof JobExtractionInput>;
+export type JobExtractionOutput = z.infer<typeof JobExtractionOutput>;
+export type JobExtractionInput = z.infer<typeof JobExtractionInput>;
