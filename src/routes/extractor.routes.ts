@@ -13,10 +13,19 @@ router.post("/extractor", async (req: Request, res: Response, next: NextFunction
     const parsed = JobExtractionInput.safeParse(req.body);
 
     if (!parsed.success) {
-        next(new ValidationError("Missing job description text"));
+        return next(new ValidationError("Missing job description text"));
     }
 
-    if (config.skipLLM == 0) {
+    if (config.stubModel == 1) {
+        return res.status(200).json({
+            seniority: "lead",
+            primary_language: "csharp",
+            remote_status: "on_site",
+            confidence: 0.95,
+            reason: "Mock Object",
+        });
+    } else {
+        // TODO: Add the AI API call extracting the data.
     }
 });
 

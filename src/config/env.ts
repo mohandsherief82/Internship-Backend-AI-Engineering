@@ -7,14 +7,14 @@ interface Config {
     supabaseKey: string;
     groqKey: string;
     llmModel: string;
-    skipLLM: number;
+    stubModel: number;
 }
 
 dotenv.config();
 
 const config: Config = {
     port: Number(process.env.PORT) || 3000,
-    skipLLM: Number(process.env.LLM_STUB) || 0,
+    stubModel: Number(process.env.LLM_STUB) || 0,
     databaseURL: process.env.DATABASE_URL || "",
     supabaseURL: process.env.SUPABASE_URL || "",
     supabaseKey: process.env.SUPABASE_KEY || "",
