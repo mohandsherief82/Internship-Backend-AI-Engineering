@@ -8,6 +8,7 @@ interface Config {
     groqKey: string;
     llmModel: string;
     stubModel: number;
+    jobPromptFile: string;
 }
 
 dotenv.config();
@@ -19,7 +20,8 @@ const config: Config = {
     supabaseURL: process.env.SUPABASE_URL || "",
     supabaseKey: process.env.SUPABASE_KEY || "",
     groqKey: process.env.GROQ_API_KEY || "",
-    llmModel: process.env.LLM_MODEL || ""
+    llmModel: process.env.LLM_MODEL || "",
+    jobPromptFile: process.env.JOB_EXTRACTOR_PROMPT_FILE || 'job-extractor-v1.md'
 };
 
 export default config;
