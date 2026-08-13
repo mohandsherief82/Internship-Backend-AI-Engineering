@@ -38,6 +38,7 @@ The API uses standardized HTTP status codes (`200 OK`, `201 Created`, `204 No Co
 | **GET** | `/public/info` | Fetches public information | None | `200 OK` | N/A |
 | **GET** | `/protected/profile` | Fetches authenticated user profile | `Bearer <access_token>` | `200 OK` | `401 Unauthorized` |
 | **GET** | `/protected/dashboard` | Fetches authenticated user email for dashboard | `Bearer <access_token>` | `200 OK` | `401 Unauthorized` |
+| **POST** | `/extractor` | Extracts the actual requirements out of a job description | `Bearer <access_token>` | `200 OK` | `401 Unauthorized` |
 
 ---
 
@@ -67,6 +68,21 @@ Connection: keep-alive
 Keep-Alive: timeout=5
 
 {"error":"Title is required and must be a non-empty string."}
+
+```
+
+1. Valid request:
+```powershell
+curl -X POST http://localhost:3000/your-thing \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Looking for a senior TypeScript developer to join our remote team."}'
+
+```
+
+2. Invalid request:
+```powershell
+curl -X POST http://localhost:3000/your-thing \
+  -H "Content-Type: application/json" \
 
 ```
 
