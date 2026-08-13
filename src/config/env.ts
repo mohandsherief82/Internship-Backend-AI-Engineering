@@ -5,6 +5,7 @@ interface Config {
     databaseURL: string;
     supabaseURL: string;
     supabaseKey: string;
+    groqKey: string
 }
 
 dotenv.config();
@@ -13,7 +14,8 @@ const config: Config = {
     port: Number(process.env.PORT) || 3000,
     databaseURL: process.env.DATABASE_URL || "",
     supabaseURL: process.env.SUPABASE_URL || "",
-    supabaseKey: process.env.SUPABASE_KEY || ""
+    supabaseKey: process.env.SUPABASE_KEY || "",
+    groqKey: process.env.GROQ_API_KEY || ""
 };
 
 export default config;
