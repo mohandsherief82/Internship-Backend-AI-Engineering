@@ -23,8 +23,8 @@ app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Use the paths
-app.use('/', metaRouter);
 app.use('/', extractorRouter);
+app.use('/', metaRouter);
 app.use('/', gatesRouter);
 app.use('/', protectedRouter);
 app.use('/', authRouter);

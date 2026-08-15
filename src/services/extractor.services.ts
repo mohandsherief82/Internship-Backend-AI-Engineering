@@ -15,7 +15,7 @@ export async function getPrompt(fileName: string): Promise<string> {
     return promptCache.get(fileName)!;
   }
 
-  const filePath = path.join(process.cwd(), 'prompts', fileName);
+  const filePath = path.join(process.cwd(), 'src/prompts', fileName);
   const content = await fs.readFile(filePath, 'utf-8');
   
   promptCache.set(fileName, content);

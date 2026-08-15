@@ -28,6 +28,8 @@ router.post("/extractor", async (req: Request, res: Response, next: NextFunction
     } else {
         try {
             const output = await extractJobInfo(parsed.data);
+
+            return res.status(200).json({output});
         } catch (error) {
             return next(error);
         }
