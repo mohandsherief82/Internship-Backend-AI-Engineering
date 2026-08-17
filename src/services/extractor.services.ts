@@ -14,9 +14,9 @@ type Messages = Groq.Chat.Completions.ChatCompletionMessageParam;
 
 const promptCache = new Map<string, string>();
 
-async function appendToQuarantineLog(logData: Record<string, unknown>) {
+async function appendToLogs(logData: Record<string, unknown>, logPath: string) {
     const logDir = path.join(process.cwd(), 'logs');
-    const logFile = path.join(logDir, 'quarantine.jsonl');
+    const logFile = path.join(logDir, logPath);
 
     try {
         await fs.mkdir(logDir, { recursive: true });
@@ -58,6 +58,8 @@ async function callLLM(messages: Messages[]) {
 }
 
 export async function extractJobInfo(input: JobExtractionInput): Promise<JobExtractionOutput> {
+    const startTime = Date.now();
+    let repairNeeded = false;
     const systemPrompt = await getPrompt(config.jobPromptFile);
 
     const messages: Messages[] = [
@@ -79,6 +81,7 @@ export async function extractJobInfo(input: JobExtractionInput): Promise<JobExtr
     let result = rawJson ? JobExtractionOutput.safeParse(rawJson) : null;
 
     if (!result || !result.success) {
+        repairNeeded = true;
         const errorMessage = !rawJson
             ? "Your output was not valid JSON."
             : result?.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
@@ -110,16 +113,31 @@ export async function extractJobInfo(input: JobExtractionInput): Promise<JobExtr
 			? result?.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")
 			: "Failed to parse JSON into valid schema on retry";
 
-		await appendToQuarantineLog({
+		await appendToLogs({
 			timestamp: new Date().toISOString(),
 			input: input.text,
 			rawModelOutput: content,
 			error: finalErrorMsg,
 			promptFile: config.jobPromptFile,
-		});
+		}, 'quarantine.jsonl');
 		
         throw new ModelSchemaValidationError(finalErrorMsg || "");
     }
+
+    const durationMs = Date.now() - startTime;
+    const promptTokens = response.usage?.prompt_tokens ?? 0;
+    const completionTokens = response.usage?.completion_tokens ?? 0;
+
+    await appendToLogs({
+        event: "llm_call_completed",
+        promptFile: config.jobPromptFile,
+        model: config.llmModel,
+        inputTokens: promptTokens,
+        outputTokens: completionTokens,
+        totalTokens: promptTokens + completionTokens,
+        durationMs,
+        repairNeeded,
+    }, `logs.jsonl`);
 
     return result.data;
 }

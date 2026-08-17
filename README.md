@@ -88,6 +88,12 @@ curl -X POST http://localhost:3000/your-thing \
 
 ---
 
+## AI API Specifications
+
+Configured Groq SDK with an explicit 30s timeout and 0 internal retries (handled via custom application logic).
+
+---
+
 ## 🎨 Interactive API Documentation (Swagger UI)
 
 The API endpoints, request bodies, schemas, and defensive edge-cases are fully documented and interactively testable via the visual Swagger UI interface.

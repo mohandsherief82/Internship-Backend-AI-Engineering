@@ -3,6 +3,8 @@ InvalidCredentialsError, AuthError, ModelOutputError, ModelSchemaValidationError
 
 import { NextFunction, Request, Response } from 'express';
 
+import { APIConnectionError, APIUserAbortError } from "groq-sdk/error";
+
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
     if (err instanceof ValidationError) {
         return res.status(400).json({ error: err.message });
@@ -37,6 +39,13 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
             details: err.message 
         });
     }
+
+    if (err instanceof APIConnectionError || err instanceof APIUserAbortError || err.name === "APIConnectionError") {
+        return res.status(504).json({
+            error: "Gateway Timeout",
+            message: "The upstream AI model timed out after 30 seconds. Please try again later.",
+            });
+        }
 
     console.error(err);
     return res.status(500).json({ error: 'Internal server error' });

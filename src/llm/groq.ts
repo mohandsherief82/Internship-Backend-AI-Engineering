@@ -8,7 +8,9 @@ if (!config.groqKey) {
 }
 
 const groq = new Groq({
-    apiKey: config.groqKey
+    apiKey: config.groqKey,
+    timeout: 30000,
+    maxRetries: 0
 });
 
 export default groq;
