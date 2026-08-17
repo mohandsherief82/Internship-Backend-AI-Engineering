@@ -7,6 +7,8 @@ services:
       - .env
     environment:
       DATABASE_URL: postgres://postgres:dev@db:5432/tasks
+    volumes:
+      -  ./logs:/app/logs
     depends_on: 
       db:
         condition: service_healthy
@@ -17,7 +19,7 @@ services:
       POSTGRES_PASSWORD: dev
       POSTGRES_DB: tasks
     volumes: 
-      - taskdata:/var/lib/postgresql
+      - taskdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d tasks"]
       interval: 5s

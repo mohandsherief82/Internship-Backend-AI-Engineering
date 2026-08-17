@@ -1,5 +1,6 @@
 import { ValidationError, NotFoundError, MissingConfigError, SignUpError,
-    InvalidCredentialsError, AuthError, ModelOutputError } from '../errors.js';
+InvalidCredentialsError, AuthError, ModelOutputError, ModelSchemaValidationError } from '../errors.js';
+
 import { NextFunction, Request, Response } from 'express';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
@@ -30,8 +31,8 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
         });
     }
 
-    if (err instanceof ModelOutputError) {
-        return res.status(502).json({ 
+    if (err instanceof ModelSchemaValidationError) {
+        return res.status(422).json({
             error: 'Upstream AI model returned invalid output.',
             details: err.message 
         });

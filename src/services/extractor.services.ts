@@ -14,7 +14,22 @@ type Messages = Groq.Chat.Completions.ChatCompletionMessageParam;
 
 const promptCache = new Map<string, string>();
 
-export async function getPrompt(fileName: string): Promise<string> {
+async function appendToQuarantineLog(logData: Record<string, unknown>) {
+    const logDir = path.join(process.cwd(), 'logs');
+    const logFile = path.join(logDir, 'quarantine.jsonl');
+
+    try {
+        await fs.mkdir(logDir, { recursive: true });
+
+        const line = JSON.stringify(logData) + '\n';
+
+        await fs.appendFile(logFile, line, 'utf-8');
+    } catch (error) {
+        console.error('Failed to write to quarantine log:', error);
+    }
+}
+
+async function getPrompt(fileName: string): Promise<string> {
     if (promptCache.has(fileName)) {
         return promptCache.get(fileName)!;
     }
@@ -94,6 +109,14 @@ export async function extractJobInfo(input: JobExtractionInput): Promise<JobExtr
 		const finalErrorMsg = hasZodError
 			? result?.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")
 			: "Failed to parse JSON into valid schema on retry";
+
+		await appendToQuarantineLog({
+			timestamp: new Date().toISOString(),
+			input: input.text,
+			rawModelOutput: content,
+			error: finalErrorMsg,
+			promptFile: config.jobPromptFile,
+		});
 		
         throw new ModelSchemaValidationError(finalErrorMsg || "");
     }
