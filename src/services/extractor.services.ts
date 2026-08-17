@@ -3,56 +3,100 @@ import { JobExtractionOutput, JobExtractionInput } from "../llm/schema.js";
 
 import config from "../config/env.js";
 
-import { ModelJSONParseError, ModelSchemaValidationError } from "../errors.js";
+import { ModelSchemaValidationError } from "../errors.js";
+
+import { Groq } from "groq-sdk";
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+type Messages = Groq.Chat.Completions.ChatCompletionMessageParam;
+
 const promptCache = new Map<string, string>();
 
 export async function getPrompt(fileName: string): Promise<string> {
-  if (promptCache.has(fileName)) {
-    return promptCache.get(fileName)!;
-  }
+    if (promptCache.has(fileName)) {
+        return promptCache.get(fileName)!;
+    }
 
-  const filePath = path.join(process.cwd(), 'src/prompts', fileName);
-  const content = await fs.readFile(filePath, 'utf-8');
-  
-  promptCache.set(fileName, content);
-  return content;
+    const filePath = path.join(process.cwd(), 'src/prompts', fileName);
+    const content = await fs.readFile(filePath, 'utf-8');
+    
+    promptCache.set(fileName, content);
+    return content;
+}
+
+function cleanJsonContent(content: string): string {
+    return content
+        .replace(/```json\s*/g, "")
+        .replace(/```\s*/g, "")     
+        .trim();
+}
+
+async function callLLM(messages: Messages[]) {
+    return groq.chat.completions.create({
+        model: config.llmModel,
+        messages: messages,
+        response_format: { type: "json_object" }, 
+        temperature: 0.1,
+    });  
 }
 
 export async function extractJobInfo(input: JobExtractionInput): Promise<JobExtractionOutput> {
-  const systemPrompt = await getPrompt(config.jobPromptFile);
+    const systemPrompt = await getPrompt(config.jobPromptFile);
 
-  const response = await groq.chat.completions.create({
-    model: config.llmModel,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: input.text },
-    ],
-    response_format: { type: "json_object" }, 
-    temperature: 0.1,
-  });
+    const messages: Messages[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: input.text },
+    ];
 
-  const content = response.choices[0]?.message?.content || "{}";
+    let response = await callLLM(messages);
+    let content = response.choices[0]?.message?.content || "{}";
 
-  let rawJson: unknown;
-  try {
-    rawJson = JSON.parse(content);
-  } catch {
-    throw new ModelJSONParseError(content);
-  }
+    let rawJson: unknown = null;
+    
+    try {
+        rawJson = JSON.parse(cleanJsonContent(content));
+    } catch {
+        rawJson = null; 
+    }
 
-  const result = JobExtractionOutput.safeParse(rawJson);
+    let result = rawJson ? JobExtractionOutput.safeParse(rawJson) : null;
 
-  if (!result.success) {
-    const issueSummary = result.error.issues
-      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join("; ");
+    if (!result || !result.success) {
+        const errorMessage = !rawJson
+            ? "Your output was not valid JSON."
+            : result?.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
 
-    throw new ModelSchemaValidationError(issueSummary);
-  }
+        messages.push({ role: "assistant", content: content });
+        messages.push({
+            role: "user",
+            content: `Your previous answer was rejected for this reason: ${errorMessage}. Return only corrected JSON matching the schema.`,
+        });
 
-  return result.data;
+        response = await callLLM(messages);
+        content = response.choices[0]?.message?.content || "";
+
+        try {
+            rawJson = JSON.parse(cleanJsonContent(content));
+            
+			result = JobExtractionOutput.safeParse(rawJson);
+        } catch (err) {
+            rawJson = null;
+            
+			result = null;
+        }
+    }
+
+    if (!result || !result.success) {
+        const hasZodError = result && "error" in result && result.error;
+
+		const finalErrorMsg = hasZodError
+			? result?.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")
+			: "Failed to parse JSON into valid schema on retry";
+		
+        throw new ModelSchemaValidationError(finalErrorMsg || "");
+    }
+
+    return result.data;
 }
