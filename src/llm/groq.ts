@@ -7,10 +7,24 @@ if (!config.groqKey) {
   throw new MissingConfigError("Missing Groq API Key in environment config.");
 }
 
-const groq = new Groq({
+export type Messages = Groq.Chat.Completions.ChatCompletionMessageParam;
+
+export const groq = new Groq({
     apiKey: config.groqKey,
     timeout: 30000,
     maxRetries: 0
 });
 
-export default groq;
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function getBackoffWithJitter(attempt: number, retryAfterHeader?: string | null): number {
+  if (retryAfterHeader) {
+    const seconds = parseFloat(retryAfterHeader);
+    
+    if (!isNaN(seconds)) return seconds * 1000;
+  }
+
+  return Math.pow(2, attempt) * 1000 + Math.random() * 500;
+}

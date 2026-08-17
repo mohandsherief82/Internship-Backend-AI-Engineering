@@ -1,4 +1,4 @@
-import groq from "../llm/groq.js";
+import { groq, Messages, getBackoffWithJitter, sleep } from "../llm/groq.js";
 import { JobExtractionOutput, JobExtractionInput } from "../llm/schema.js";
 
 import config from "../config/env.js";
@@ -9,8 +9,6 @@ import { Groq } from "groq-sdk";
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-
-type Messages = Groq.Chat.Completions.ChatCompletionMessageParam;
 
 const promptCache = new Map<string, string>();
 
@@ -49,12 +47,36 @@ function cleanJsonContent(content: string): string {
 }
 
 async function callLLM(messages: Messages[]) {
-    return groq.chat.completions.create({
-        model: config.llmModel,
-        messages: messages,
-        response_format: { type: "json_object" }, 
-        temperature: 0.1,
-    });  
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            return await groq.chat.completions.create({
+                model: config.llmModel,
+                messages,
+                response_format: { type: 'json_object' },
+                temperature: 0.1,
+            });
+        } catch (error: any) {
+            const status = error?.status || error?.statusCode;
+
+            if (status && status >= 400 && status < 500 && status !== 429) {
+                throw error;
+            }
+
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+
+            const retryAfter = error?.headers?.get?.('retry-after') || error?.headers?.['retry-after'];
+            const delayMs = getBackoffWithJitter(attempt, retryAfter);
+
+            console.warn(`[Groq Retry] Attempt ${attempt + 1} failed (Status: ${status || 'Timeout'}). Retrying in ${Math.round(delayMs)}ms...`);
+            await sleep(delayMs);
+        }
+    }
+
+    throw new Error('Max retries exceeded');
 }
 
 export async function extractJobInfo(input: JobExtractionInput): Promise<JobExtractionOutput> {
