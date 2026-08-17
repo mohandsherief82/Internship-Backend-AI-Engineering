@@ -9,6 +9,7 @@ interface Config {
     llmModel: string;
     stubModel: number;
     jobPromptFile: string;
+    llmEnable: boolean;
 }
 
 dotenv.config();
@@ -21,7 +22,8 @@ const config: Config = {
     supabaseKey: process.env.SUPABASE_KEY || "",
     groqKey: process.env.GROQ_API_KEY || "",
     llmModel: process.env.LLM_MODEL || "",
-    jobPromptFile: process.env.JOB_EXTRACTOR_PROMPT_FILE || 'job-extractor-v1.md'
+    jobPromptFile: process.env.JOB_EXTRACTOR_PROMPT_FILE || 'job-extractor-v1.md',
+    llmEnable: process.env.LLM_ENABLED === "true" ? true: false
 };
 
 export default config;

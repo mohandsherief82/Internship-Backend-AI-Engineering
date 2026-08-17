@@ -11,6 +11,12 @@ import { extractJobInfo } from "../services/extractor.services.js";
 const router = Router();
 
 router.post("/extractor", async (req: Request, res: Response, next: NextFunction) => {
+    if (!config.llmEnable) {
+        return res.status(503).json({
+            message: "Service isnot available at the moment"
+        });
+    }
+
     const parsed = JobExtractionInput.safeParse(req.body);
 
     if (!parsed.success) {
