@@ -6,12 +6,13 @@ interface Config {
     timeout: number;
 }
 
-dotenv.config();
+dotenv.config({ path: "./scrapper/.env" });
 
 const config: Config = {
     userAgent: process.env.USER_AGENT || "",
-    target: process.env.TARGET || "",
+    target: process.env.TARGET || '',
     timeout: Number(process.env.TIMEOUT) || 3000
 };
+
 
 export default config;
