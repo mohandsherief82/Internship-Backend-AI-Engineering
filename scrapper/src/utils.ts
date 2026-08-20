@@ -1,61 +1,56 @@
 import fs from "node:fs/promises";
 import { file } from "zod";
 
-interface inMemory { 
-    inCache: boolean;
-    htmlPage: string;
+import config from "./config/env";
+
+export async function fetchHTML() {
+    return await fetch(config.target, {
+        method: "GET",
+        headers: {
+            "user-agent": config.userAgent
+        }
+    });
 }
 
-async function writeFetchedHTML(content: string, filePath: string) {
+export async function writeFetchedHTML(content: string, filePath: string) {
+    if (!content) {
+        throw new Error("Missing content to write");
+    }
+
     try {
-        await fs.writeFile(filePath, content);
+        await fs.writeFile(filePath, content, {
+            encoding: "utf-8",
+            flag: "w"
+        });
 
         return true;
     } catch (err) {
         console.error("Error writing file:", err);
 
-        return false;
+        return false
     }
 }
 
-export async function readFromCache(filePath: string) : Promise<inMemory> {
+export async function readFromCache(filePath: string) : Promise<boolean> {
     try {
         const res = await fs.readFile(filePath, "utf-8");
 
         if (res.length != 0) {
-            return {inCache: true, htmlPage: res};
+            console.log("\nCACHE HIT");
+
+            return true;
         }
-    } catch (err) {
-        console.error("Failure reading file", err);
+    } catch (err: unknown) {
+        if (typeof err === "object" && err !== null &&
+            "code" in err && err.code === "ENOENT") {
+            console.log(`File doesn't exist.\nFile will be created at \"${filePath}..\"`);
+        } else {
+            console.error("Failure reading file....", err);
+        }
     }
 
-    return {inCache: false, htmlPage: ""};
-}
+    console.log(`File exists at path ${filePath}, but it is empty..`);
+    console.log("\nFETCH");
 
-export async function parseData(htmlContent: string, inCache: boolean) {
-    if (inCache) {
-        console.log("CACHE HIT");
-
-        return true;
-    }
-
-    console.log("FETCH");
-    
-    if (!htmlContent) {
-        throw new Error("Failed to fetch data");
-    }
-
-    console.log("Fetched page successfully.");
-
-    const writeState = await writeFetchedHTML(htmlContent, "./scrapper/cache/catalogue-page-1.html");
-
-    if (!writeState) {
-        console.log("Problems writing to file.");
-
-        return false;
-    }
-
-    console.log("Wrote to file succesfully.");
-
-    return true;
+    return false;
 }
