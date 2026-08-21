@@ -2,6 +2,8 @@ import fs from "node:fs/promises";
 
 import config from "./config/env";
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function fetchHTML(target: string) {
     return await fetch(target, {
         method: "GET",
@@ -55,17 +57,18 @@ async function readFromCache(filePath: string) : Promise<boolean> {
     return false;
 }
 
-export async function fetcher(target: string) {
+export async function fetcher(target: string, storeagePath: string) {
     try {
-        const inCache = await readFromCache("./scrapper/cache/catalogue-page-1.html")
+        const inCache = await readFromCache("./scrapper/cache/" + storeagePath)
 
         if (!inCache) {
+            await sleep(500);
             const response = await fetchHTML(target);
 
             if (response.status === 200) {
                 const htmlPage = await response.text();
 
-                await writeFetchedHTML(htmlPage, "./scrapper/cache/catalogue-page-1.html");
+                await writeFetchedHTML(htmlPage, "./scrapper/cache/" + storeagePath);
             }
         }
     } catch (err) {
