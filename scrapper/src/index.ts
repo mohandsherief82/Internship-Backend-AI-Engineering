@@ -1,23 +1,13 @@
-import { readFromCache, fetchHTML, writeFetchedHTML } from "./utils";
+import { fetcher } from "./utils";
 
-import { parseHTML } from "./scrapper/utils.scrapper";
+import { parseHTML, extractProductLinks } from "./scrapper/utils.scrapper";
 import config from "./config/env";
 import * as cheerio from "cheerio";
 
-try {
-    const inCache = await readFromCache("./scrapper/cache/catalogue-page-1.html")
-
-    if (!inCache) {
-        const response = await fetchHTML();
-
-        if (response.status === 200) {
-            const htmlPage = await response.text();
-
-            await writeFetchedHTML(htmlPage, "./scrapper/cache/catalogue-page-1.html");
-        }
-    }
-} catch (err) {
-    console.error(err);
-}
+await fetcher(config.target);
 
 console.log("Done scrapping....");
+
+const $ = await parseHTML("./scrapper/cache/catalogue-page-1.html");
+
+const extracted_links = extractProductLinks($, config.target);

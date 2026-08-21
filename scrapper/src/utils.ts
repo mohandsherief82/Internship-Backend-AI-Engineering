@@ -1,18 +1,18 @@
 import fs from "node:fs/promises";
-import { file } from "zod";
 
 import config from "./config/env";
 
-export async function fetchHTML() {
-    return await fetch(config.target, {
+async function fetchHTML(target: string) {
+    return await fetch(target, {
         method: "GET",
+        signal: AbortSignal.timeout(config.timeout),
         headers: {
             "user-agent": config.userAgent
         }
     });
 }
 
-export async function writeFetchedHTML(content: string, filePath: string) {
+async function writeFetchedHTML(content: string, filePath: string) {
     if (!content) {
         throw new Error("Missing content to write");
     }
@@ -31,7 +31,7 @@ export async function writeFetchedHTML(content: string, filePath: string) {
     }
 }
 
-export async function readFromCache(filePath: string) : Promise<boolean> {
+async function readFromCache(filePath: string) : Promise<boolean> {
     try {
         const res = await fs.readFile(filePath, "utf-8");
 
@@ -54,3 +54,21 @@ export async function readFromCache(filePath: string) : Promise<boolean> {
 
     return false;
 }
+
+export async function fetcher(target: string) {
+    try {
+        const inCache = await readFromCache("./scrapper/cache/catalogue-page-1.html")
+
+        if (!inCache) {
+            const response = await fetchHTML(target);
+
+            if (response.status === 200) {
+                const htmlPage = await response.text();
+
+                await writeFetchedHTML(htmlPage, "./scrapper/cache/catalogue-page-1.html");
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+} 
