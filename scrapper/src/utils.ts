@@ -78,16 +78,16 @@ export async function fetcher(target: string, storagePath: string) {
     }
 } 
 
-export function getFetchDate(filePath: string): Date | null {
+export function getFetchDate(filePath: string): string | null {
     const absolutePath = resolveCachePath(filePath);
 
-  if (fsd.existsSync(absolutePath)) {
-    const stats = fsd.statSync(absolutePath);
-        
-    return stats.mtime;
-  }
+    if (fsd.existsSync(absolutePath)) {
+        const stats = fsd.statSync(absolutePath);
+            
+        return stats.mtime.toISOString();
+    }
 
-  return null;
+    return null;
 }
 
 function resolveCachePath(relativePath: string): string {

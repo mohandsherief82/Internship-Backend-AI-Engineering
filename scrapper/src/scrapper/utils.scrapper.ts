@@ -41,14 +41,19 @@ export function extractProductNames($: cheerio.CheerioAPI) : string[] {
   return Array.from(new Set(extractedLinks));
 }
 
-export async function extractRecords(storagePath: string, sourcePage: string) : Promise<Record> {
+export async function extractRecords(storagePath: string, sourcePage: string) : Promise<unknown> {
     const $_book = await parseHTML("./scrapper/cache/" + storagePath);
 
     const urlSlug = storagePath.slice(5, -5);
 
     const pageTitle = slugToTitle(urlSlug);
-    const price = Number($_book(".price_color").text().split("£")[1]) || 0;
-    const availabilityText = $_book("p.instock").text().trim();
+	
+	const price_text = $_book(".price_color").text();
+    const price = Number(price_text.split("£")[1]) || 0;
+
+    const rawText = $_book("p.instock").text().trim();
+	const match = rawText.match(/In stock(?:\s*\(\d+\s*available\))?/i);
+	const availabilityText = match ? match[0] : "Out of Stock";
 
     const ratingClasses = $_book(".star-rating").attr("class")?.split(/\s+/) || [];
   
@@ -63,11 +68,12 @@ export async function extractRecords(storagePath: string, sourcePage: string) : 
     return {
         title: pageTitle,
         product_url: config.target + urlSlug + "/index.html",
-        price_text: price,
+		price_text: price_text,
+        price_gbp: price,
         availability_text: availabilityText,
         rating_text: rating_text,
         description: description,
         source_page: sourcePage,
-        fetched_at: String(getFetchDate(storagePath))
+        fetched_at: getFetchDate(storagePath)
     };
 }
