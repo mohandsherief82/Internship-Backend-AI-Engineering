@@ -59,7 +59,7 @@ async function readFromCache(filePath: string) : Promise<boolean> {
     return false;
 }
 
-export async function fetcher(target: string, storagePath: string) {
+export async function fetcher(target: string, storagePath: string) : Promise<string> {
     try {
         const inCache = await readFromCache("./scrapper/cache/" + storagePath)
 
@@ -71,11 +71,17 @@ export async function fetcher(target: string, storagePath: string) {
                 const htmlPage = await response.text();
 
                 await writeFetchedHTML(htmlPage, "./scrapper/cache/" + storagePath);
+
+                return "miss";
             }
+        } else {
+            return "hit"
         }
     } catch (err) {
         console.error(err);
     }
+
+    return "failure";
 } 
 
 export function getFetchDate(filePath: string): string | null {
