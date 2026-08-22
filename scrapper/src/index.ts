@@ -7,6 +7,8 @@ import { Record, RecordSchema, FailedRecord } from "./scrapper/schema";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+await fs.mkdir(path.resolve(process.cwd(), "scrapper", "cache"), { recursive: true });
+
 const startTimeISO = new Date().toISOString();
 const startMs = performance.now();
 
