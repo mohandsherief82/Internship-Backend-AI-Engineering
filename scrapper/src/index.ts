@@ -1,25 +1,37 @@
 import { fetcher } from "./utils";
 
-import { parseHTML, extractProductLinks } from "./scrapper/utils.scrapper";
+import { parseHTML, extractProductNames, extractRecords } from "./scrapper/utils.scrapper";
 import config from "./config/env";
+import { Record } from "./scrapper/schema";
+
 import * as cheerio from "cheerio";
 
+const records: Record[] = [];
 
 console.log("Started scrapping....\n");
 
 for (let i = 1; i <= config.pageLimit; ++i) {
-    await fetcher(`${config.target}page-${i}.html`, `catalogue-page-${i}.html`);
+    const source = `${config.target}page-${i}.html`;
 
-    const $_1 = await parseHTML(`./scrapper/cache/catalogue-page-${i}.html`);
+    await fetcher(source, `catalogue-page-${i}.html`);
 
-    const extractedLinks = extractProductLinks($_1, config.target);
+    const $ = await parseHTML(`./scrapper/cache/catalogue-page-${i}.html`);
+
+    const extractedProductNames = extractProductNames($);
     
-    console.log("Started record extraction....");
-    // for (const link in extractedLinks) {
-    //     await fetcher(link, ``);
+    console.log("Started record extraction....",);
 
-    //     const $ = parseHTML
-    // }
+    for (const productName of extractedProductNames) {
+        const storagePath = `book-${productName}.html`;
+
+        await fetcher(config.target + productName + "/index.html", storagePath);
+
+        const newRecord = await extractRecords(storagePath, source);
+
+        records.push(newRecord);
+    }
 }
+
+console.log(records[0], "\n", `detail_paes = ${records.length}`);
 
 console.log("\nDone scrapping....");

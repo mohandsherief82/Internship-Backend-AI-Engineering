@@ -1,4 +1,6 @@
 import fs from "node:fs/promises";
+import fsd from "node:fs";
+import path from "node:path";
 
 import config from "./config/env";
 
@@ -57,9 +59,9 @@ async function readFromCache(filePath: string) : Promise<boolean> {
     return false;
 }
 
-export async function fetcher(target: string, storeagePath: string) {
+export async function fetcher(target: string, storagePath: string) {
     try {
-        const inCache = await readFromCache("./scrapper/cache/" + storeagePath)
+        const inCache = await readFromCache("./scrapper/cache/" + storagePath)
 
         if (!inCache) {
             await sleep(500);
@@ -68,10 +70,33 @@ export async function fetcher(target: string, storeagePath: string) {
             if (response.status === 200) {
                 const htmlPage = await response.text();
 
-                await writeFetchedHTML(htmlPage, "./scrapper/cache/" + storeagePath);
+                await writeFetchedHTML(htmlPage, "./scrapper/cache/" + storagePath);
             }
         }
     } catch (err) {
         console.error(err);
     }
 } 
+
+export function getFetchDate(filePath: string): Date | null {
+    const absolutePath = resolveCachePath(filePath);
+
+  if (fsd.existsSync(absolutePath)) {
+    const stats = fsd.statSync(absolutePath);
+        
+    return stats.mtime;
+  }
+
+  return null;
+}
+
+function resolveCachePath(relativePath: string): string {
+  return path.resolve(process.cwd(), "scrapper", "cache", relativePath);
+}
+
+export function slugToTitle(slug: string): string {
+  return slug
+    .replace(/_\d+$/, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
