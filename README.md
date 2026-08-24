@@ -108,3 +108,35 @@ To view and execute live network hooks inside the dashboard, open your browser a
 When you open your local documentation endpoint, the layout will look like the following interactive dashboard. You can expand each colored endpoint section to quickly test successful operations and error handling workflows directly inside the UI:
 
 ![Swagger UI Test](image.png)
+
+## AI Development version
+
+After prompting Claude Sonnet 5 to create the same API, it successfully generated a README.md, package.json, tsconfig.json files and a src directlry with multiple typescript files that have the necessary codes.
+
+Given Prompt:
+```
+Background:
+I am an intern at FlyrankAI, following the Backend AI Engineering track.. In this tack, I am learning about how backend technologies work and how they work with Agentic AI systems.
+In this week, we have learned about how the backend of websites work, and we have an assignment named "Build Your First CRUD API". This assignment is concerned with building a simple five point API with multiple paths. The API is a backend only API for a to-do list that saves the list in memory with no database.
+Goals:
+Stage 1
+Create the first route handler that handles the root path"/", that uses GET method to return a JSON object that returns name: "Task API", "version":"2.0', "endpoints":['/tasks'] object.
+create the health path that uses a GET method to return the server status.
+Stage 2
+create a new path '/tasks', that uses a GET method to return all the stored tasks, where each task has id"number", title"string" and done"boolean".
+create for the "/tasks" that can take a single path parameter the id, so it can use a GET method to get the task with the given idea.
+Stage 3
+create a post endpoint on the '/tasks' path, that creates a new item given the tasks title only nothing else, the server gives the new task the next free id and sets done to false.
+Stage 4
+add a PUT method to the '/tasks' path, so it can replace a tasks title and/or done status.
+add a DELETE method to the 'tasks' paths, that can delete a task based on a given id through the url parameter.
+Stage 5
+add the swagger description of the website using the openAPI file in its JSON format.
+
+Instruction:
+build this API using node.js typescript(not simple javascript).
+```
+
+As seen in the prompt, I haven't specified what status code to return. However, the model has used the correct(same) status code as my code. Also, I haven't specified the src directory structure and number of files, so the model choose to use multiple files that have intensive comments, which made the codebase clearner than the one i have created. However, it seems a little overkill for this relatively simple API.
+
+In conclusion, both codes are good, but the model has given arguebly better codebase in a shorter amount of time.
