@@ -39,7 +39,7 @@ for (let i = 1; i <= config.pageLimit; ++i) {
             break;
     }
 
-    const $ = await parseHTML(`./scrapper/cache/catalogue-page-${i}.html`);
+    const $ = await parseHTML(`./cache/catalogue-page-${i}.html`);
 
     const extractedProductNames = extractProductNames($);
     
@@ -91,7 +91,7 @@ reportData.failed_pages += errorLogs.length;
 
 console.log("\nWrite Scrapped Objects to file....");
 
-const storageDir = path.resolve(process.cwd(), "scrapper", "output");
+const storageDir = path.resolve(process.cwd(), "output");
 await fs.mkdir(storageDir, { recursive: true });
 
 const booksPath = path.join(storageDir, "books.json");

@@ -42,7 +42,7 @@ export function extractProductNames($: cheerio.CheerioAPI) : string[] {
 }
 
 export async function extractRecords(storagePath: string, sourcePage: string) : Promise<unknown> {
-    const $_book = await parseHTML("./scrapper/cache/" + storagePath);
+    const $_book = await parseHTML("./cache/" + storagePath);
 
     const urlSlug = storagePath.slice(5, -5);
 

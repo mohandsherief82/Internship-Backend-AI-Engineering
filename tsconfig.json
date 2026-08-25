@@ -10,5 +10,5 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": ["src/**/*", "openapi.json"]
+  "include": ["src/**/*", "./CRUD-API/openapi.json"]
 }

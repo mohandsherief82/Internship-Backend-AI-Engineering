@@ -61,7 +61,7 @@ async function readFromCache(filePath: string) : Promise<boolean> {
 
 export async function fetcher(target: string, storagePath: string) : Promise<string> {
     try {
-        const inCache = await readFromCache("./scrapper/cache/" + storagePath)
+        const inCache = await readFromCache("./cache/" + storagePath)
 
         if (!inCache) {
             await sleep(500);
@@ -70,7 +70,7 @@ export async function fetcher(target: string, storagePath: string) : Promise<str
             if (response.status === 200) {
                 const htmlPage = await response.text();
 
-                await writeFetchedHTML(htmlPage, "./scrapper/cache/" + storagePath);
+                await writeFetchedHTML(htmlPage, "./cache/" + storagePath);
 
                 return "miss";
             }
@@ -97,7 +97,7 @@ export function getFetchDate(filePath: string): string | null {
 }
 
 function resolveCachePath(relativePath: string): string {
-  return path.resolve(process.cwd(), "scrapper", "cache", relativePath);
+  return path.resolve(process.cwd(), "cache", relativePath);
 }
 
 export function slugToTitle(slug: string): string {
