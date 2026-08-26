@@ -22,3 +22,15 @@ export async function buildReport(id: string, topic: string) {
 
 	return;
 }
+
+export function failedReport(id: string, errorMsg: string) {
+	const report = reportsStore.get(id);
+
+	if (!report) {
+		console.warn(`[failedReport] Report with ID ${id} not found in store.`);
+		return;
+	}
+
+	report.status = "failed";
+	report.data = errorMsg;
+}
