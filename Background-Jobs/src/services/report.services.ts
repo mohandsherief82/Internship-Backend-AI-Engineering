@@ -34,3 +34,20 @@ export function failedReport(id: string, errorMsg: string) {
 	report.status = "failed";
 	report.data = errorMsg;
 }
+
+export function summary() : string {
+	const counts = { pending: 0, processing: 0, failed: 0, completed: 0 };
+
+  for (const report of reportsStore.values()) {
+    if (report.status in counts) {
+      counts[report.status as keyof typeof counts]++;
+    }
+  }
+
+  return [
+    `Pending Reports: ${counts.pending}`,
+    `Processing Reports: ${counts.processing}`,
+    `Failed Reports: ${counts.failed}`,
+    `Completed Reports: ${counts.completed}`,
+  ].join("\n");
+}
