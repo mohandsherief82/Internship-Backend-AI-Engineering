@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - inngest
+
+  inngest:
+    image: inngest/inngest:latest
+    ports:
+      - "8288:8288"
+      - "8289:8289"
+    command: ["inngest", "dev", "-u", "http://app:3000/api/inngest"]
